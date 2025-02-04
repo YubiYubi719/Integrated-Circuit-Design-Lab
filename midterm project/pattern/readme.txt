@@ -1,0 +1,1 @@
+最下面那個副檔名是.py  pattern.py是用來產input.txt和dram.dat2k7

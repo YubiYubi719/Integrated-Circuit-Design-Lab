@@ -1,0 +1,420 @@
+module CC(
+    //Input Port
+    clk,
+    rst_n,
+	in_valid,
+	mode,
+    xi,
+    yi,
+
+    //Output Port
+    out_valid,
+	xo,
+	yo
+    );
+
+input               clk, rst_n, in_valid;
+input       [1:0]   mode;
+input       [7:0]   xi, yi;  
+
+output reg          out_valid;
+output reg signed [7:0]   xo, yo;
+//==============================================//
+//             Parameter and Integer            //
+//==============================================//
+
+// parameters for Trapezoid rendering
+reg signed [7:0] x [0:3];
+reg signed [7:0] y [0:3];
+reg [1:0] mode_reg;
+reg print_valid;
+reg [2:0] input_idx;
+reg mode0_valid;
+reg mode1_valid;
+reg mode2_valid;
+reg mode0_cal_valid;
+reg isNeg_left, isNeg_right;
+reg rst_cnt_mode0;
+reg [2:0] rst_cnt_mode1;
+reg [2:0] rst_cnt_mode2;
+reg isFinished;
+parameter IDLE_mode0 = 1'b0, CAL_mode0 = 1'b1;
+reg curState_mode0, nextState_mode0;
+parameter IDLE_output_mode0 = 1'b0, PRINT_output0_mode0 = 1'b1;
+reg curState_output_mode0, nextState_output_mode0;
+reg signed [7:0] l_bound, r_bound;
+reg signed [8:0] cur_y;
+reg signed [7:0] l_bound_tmp, r_bound_tmp;
+reg signed [9:0] cnt_y;
+
+reg signed [8:0]  a_left, b_left;
+reg signed [8:0]  a_right, b_right;
+reg signed [17:0] c_left, c_right; // constant
+reg signed [18:0] tmp_left, tmp_right;
+reg signed [9:0]  cnt_x;
+reg signed [7:0]  cur_xo;
+reg signed [7:0]  cur_yo;
+reg signed [7:0]  xo_mode0, yo_mode0;
+reg signed [7:0]  xo_mode1, yo_mode1;
+reg signed [7:0]  xo_mode2, yo_mode2;
+reg signed [7:0]  cur_x_left, cur_x_right;
+
+//======================================================SELECT OUTPUT======================================================
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        // initialize output signals
+        xo <= 0;
+        yo <= 0;
+    end
+    else begin
+        // if(mode_reg == 2'b0) begin
+        //     xo <= xo_mode0;
+        //     yo <= yo_mode0;
+        // end
+        case(mode_reg)
+        2'd0:begin
+            xo <= xo_mode0;
+            yo <= yo_mode0;
+        end
+        2'd1:begin
+            xo <= xo_mode1;
+            yo <= yo_mode1;
+        end
+        2'd2:begin
+            xo <= xo_mode2;
+            yo <= yo_mode2;
+        end
+        default:begin
+            xo <= 8'b0;
+            yo <= 8'b0;
+        end
+        endcase
+    end
+end
+
+always @(posedge clk) begin
+    if(mode_reg == 0 && isFinished) begin
+        rst_cnt_mode0 <= rst_cnt_mode0 + 1'b1;
+    end
+    else rst_cnt_mode0 <= 1'b0;
+end
+
+//read input (4 clock)
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        input_idx <= 2'd0;
+    end
+    else if(in_valid) begin
+        input_idx <= input_idx + 1'b1;
+    end
+    else if(!out_valid) input_idx <= 2'd0;
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        x[0] <= 0;
+        y[0] <= 0;
+        x[1] <= 0;
+        y[1] <= 0;
+        x[2] <= 0;
+        y[2] <= 0;
+        x[3] <= 0;
+        y[3] <= 0;
+        mode_reg <= 2'd3;
+    end
+    else if(in_valid) begin
+        x[input_idx] <= xi;
+        y[input_idx] <= yi;
+        mode_reg <= mode;
+        // $display("x[%d] = %d  y[%d] = %d",input_idx, x[input_idx], input_idx, y[input_idx]);
+    end
+end
+
+// select mode
+
+always @(*) begin
+    if(input_idx == 3'd4) begin
+        case(mode_reg)
+            2'd0: begin
+                mode0_valid = 1'b1; // activate mode0
+                mode1_valid = 1'b0;
+                mode2_valid = 1'b0;
+            end
+            2'd1: begin
+                mode0_valid = 1'b0;
+                mode1_valid = 1'b1;
+                mode2_valid = 1'b0;
+            end
+            2'd2: begin
+                mode0_valid = 1'b0;
+                mode1_valid = 1'b0;
+                mode2_valid = 1'b1;
+            end
+            default: mode0_valid = 0;
+        endcase
+    end
+    else begin
+        mode0_valid = 0;
+        mode1_valid = 0;
+        mode2_valid = 0;
+    end
+end
+
+//======================================================MODE_0======================================================
+// mode_0 top FSM
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        curState_mode0 <= IDLE_mode0;
+    end
+    else begin
+        curState_mode0 <= nextState_mode0;
+    end
+end
+
+
+always @(*) begin
+    if(!rst_n) begin
+        nextState_mode0 = IDLE_mode0;
+    end
+    else begin
+        case(curState_mode0)
+            IDLE_mode0: begin
+                if(mode0_cal_valid) begin
+                    nextState_mode0 = CAL_mode0;
+                end
+                else nextState_mode0 = IDLE_mode0;
+            end
+            CAL_mode0: begin
+                nextState_mode0 = IDLE_mode0;
+            end
+        endcase
+    end
+end
+
+
+// 判斷斜率正負及計算方程式
+always @(*) begin
+    // 計算方程式之常數c
+    a_left = y[2] - y[0];
+    b_left = x[0] - x[2];
+    c_left = a_left*x[0] + b_left*y[0];
+
+    a_right = y[3] - y[1];
+    b_right = x[1] - x[3];
+    c_right = a_right*x[1] + b_right*y[1];
+
+end
+
+// cnt_y++
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        cnt_y <= 0;
+    end
+    else if(mode_reg == 0 && cur_xo == r_bound - 1) begin
+        cnt_y <= cnt_y + 1;
+    end
+    else if(!out_valid) cnt_y <= 0;
+end
+
+// 計算邊界
+always @(*) begin
+    if(cur_y > y[0]) isFinished = 1'b1;
+    else isFinished = 1'b0;
+end
+
+always @(*) begin
+    // l_bound_tmp = (c_left - b_left*cur_y) / a_left;
+    // r_bound_tmp = (c_right - b_right*cur_y) / a_right;
+    cur_y = y[3] + cnt_y;
+    tmp_left = c_left - b_left*cur_y;
+    tmp_right = c_right - b_right*cur_y;
+    isNeg_left = tmp_left[18] ^ a_left[8];
+    isNeg_right = tmp_right[18] ^ a_right[8];
+    cur_x_left = tmp_left / a_left;
+    cur_x_right = tmp_right / a_right;
+
+    if(a_left*cur_x_left + b_left*cur_y == c_left) begin
+        l_bound_tmp = cur_x_left;
+    end
+    else begin
+        if(isNeg_left) begin
+            l_bound_tmp = cur_x_left - 1;
+        end
+        else begin
+            l_bound_tmp = cur_x_left;
+        end
+    end
+
+    if(a_right*cur_x_right + b_right*cur_y == c_right) begin
+        r_bound_tmp = cur_x_right;
+    end
+    else begin
+        if(isNeg_right) begin
+            r_bound_tmp = cur_x_right - 1;
+        end
+        else begin
+            r_bound_tmp = cur_x_right;
+        end
+    end
+end
+
+// 更新邊界至flip flop
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        l_bound <= 0;
+        r_bound <= 0;
+    end
+    else begin
+        if(curState_mode0 == CAL_mode0) begin
+            l_bound <= l_bound_tmp;
+            r_bound <= r_bound_tmp;
+        end
+    end
+end
+
+// PRINT_FSM
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        curState_output_mode0 <= IDLE_output_mode0;
+    end
+    else begin
+        curState_output_mode0 <= nextState_output_mode0;
+    end
+end
+
+always @(*) begin
+    if(!rst_n) begin
+        nextState_output_mode0 = IDLE_output_mode0;
+    end
+    else begin
+        case(curState_output_mode0)
+            IDLE_output_mode0: begin
+                if(print_valid) nextState_output_mode0 = PRINT_output0_mode0;
+                else nextState_output_mode0 = IDLE_output_mode0;
+            end
+            PRINT_output0_mode0: begin
+                if(isFinished) nextState_output_mode0 = IDLE_output_mode0;
+                else nextState_output_mode0 = PRINT_output0_mode0;
+            end
+            default: nextState_output_mode0 = IDLE_output_mode0;
+        endcase
+    end
+end
+
+always @(*) begin
+    if(cur_xo == r_bound - 1 && (!in_valid)) begin
+        mode0_cal_valid = 1;
+    end
+    else if(curState_mode0 == IDLE_mode0) begin
+        mode0_cal_valid = (!in_valid) && mode0_valid;
+    end
+    else begin
+        mode0_cal_valid = 0;
+    end
+end
+
+always @(*) begin
+    if(curState_mode0 == CAL_mode0) begin
+        print_valid = 1;
+    end
+    else begin
+        print_valid = 0;
+    end
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) out_valid <= 0;
+    else if(mode_reg == 0 && in_valid) out_valid <= 1'b0;
+    else if(mode_reg == 0 && rst_cnt_mode0 == 1'd1) out_valid <= 1'b0;
+    else if(mode_reg == 0 && curState_output_mode0 == PRINT_output0_mode0 && cnt_x == 0) out_valid <= 1'b1;
+    else if(mode_reg == 1 && rst_cnt_mode1 >= 1'd1) out_valid <= 1'b0;
+    else if(mode_reg == 1 && !in_valid) out_valid <= 1'b1;
+    else if(mode_reg == 2 && rst_cnt_mode2 >= 1'd1) out_valid <= 1'b0;
+    else if(mode_reg == 2 && !in_valid) out_valid <= 1'b1;
+end
+
+// cnt_x++
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        cnt_x <= 0;
+    end
+    else if(print_valid) begin
+        cnt_x <= 0;
+    end
+    else if(mode_reg == 0 && curState_output_mode0 == PRINT_output0_mode0) begin
+        cnt_x <= cnt_x + 1;
+    end
+end
+
+// 輸出座標
+always @(posedge clk) begin
+    cur_yo <= cur_y;
+end
+
+always @(*) begin
+    cur_xo = l_bound + cnt_x;
+    xo_mode0 = cur_xo;
+    yo_mode0 = cur_yo;
+end
+//======================================================CAL_SOME_DATA======================================================
+wire signed [8:0] y1_minus_y0;
+wire signed [8:0] x0_minus_x1;
+wire signed [8:0] x2_minus_x3;
+wire signed [8:0] y2_minus_y3;
+
+reg signed [14:0] tmp_DPL;// d(P,L)之分子
+reg signed [29:0] tmp_DPL_square; // d(P,L)之分子平方
+reg signed [29:0] tmp_R_square; //半徑平方 * d(P,L)之分母平方
+
+assign y1_minus_y0 = y[1] - y[0];
+assign x0_minus_x1 = x[0] - x[1];
+assign x2_minus_x3 = x[2] - x[3];
+assign y2_minus_y3 = y[2] - y[3];
+
+always @(*) begin
+    tmp_DPL = y1_minus_y0*x[2] + x0_minus_x1*y[2] + y[0]*x[1] - x[0]*y[1];
+    tmp_DPL_square = tmp_DPL*tmp_DPL;
+    tmp_R_square = (y1_minus_y0*y1_minus_y0 + x0_minus_x1*x0_minus_x1) * (x2_minus_x3*x2_minus_x3 + y2_minus_y3*y2_minus_y3);
+end
+//======================================================MODE_1======================================================
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) rst_cnt_mode1 <= 0;
+    else if(mode_reg == 1 && !in_valid) rst_cnt_mode1 <= rst_cnt_mode1 + 1'b1;
+    else rst_cnt_mode1 <= 0;
+end
+
+always @(*) begin
+    if(tmp_DPL_square > tmp_R_square) begin
+        xo_mode1 = 8'h00;
+        yo_mode1 = 8'h00;
+    end
+    else if(tmp_DPL_square < tmp_R_square) begin
+        xo_mode1 = 8'h00;
+        yo_mode1 = 8'h01;
+    end
+    else begin
+        xo_mode1 = 8'h00;
+        yo_mode1 = 8'h02;
+    end
+end
+
+//======================================================MODE_2======================================================
+reg signed [15:0] area;
+reg [15:0] pos_area;
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) rst_cnt_mode2 <= 0;
+    else if(mode_reg == 2 && !in_valid) rst_cnt_mode2 <= rst_cnt_mode2 + 1'b1;
+    else rst_cnt_mode2 <= 0;
+end
+
+always @(*) begin
+    area = ((x[0]*y[1] - x[1]*y[0]) + (x[1]*y[2] - x[2]*y[1]) + (x[2]*y[3] - x[3]*y[2]) + (x[3]*y[0] - x[0]*y[3])) / 2;
+    pos_area = area >= 0? area:-1*area;
+    xo_mode2 = pos_area[15:8];
+    yo_mode2 = pos_area[7:0];
+end
+
+endmodule 

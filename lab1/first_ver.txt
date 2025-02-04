@@ -1,0 +1,1410 @@
+//############################################################################
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//   (C) Copyright Laboratory System Integration and Silicon Implementation
+//   All Right Reserved
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//
+//   ICLAB 2023 Fall
+//   Lab01 Exercise        : Supper MOSFET Calculator
+//   Author             : Lin-Hung Lai (lhlai@ieee.org)
+//
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//
+//   File Name   : SMC.v
+//   Module Name : SMC
+//   Release version : V1.0 (Release Date: 2023-09)
+//
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//############################################################################
+
+
+module SMC(
+  // Input signals
+    mode,
+    W_0, V_GS_0, V_DS_0,
+    W_1, V_GS_1, V_DS_1,
+    W_2, V_GS_2, V_DS_2,
+    W_3, V_GS_3, V_DS_3,
+    W_4, V_GS_4, V_DS_4,
+    W_5, V_GS_5, V_DS_5,   
+  // Output signals
+    out_n
+);
+
+//================================================================
+//   INPUT AND OUTPUT DECLARATION                         
+//================================================================
+input [2:0] W_0, V_GS_0, V_DS_0;
+input [2:0] W_1, V_GS_1, V_DS_1;
+input [2:0] W_2, V_GS_2, V_DS_2;
+input [2:0] W_3, V_GS_3, V_DS_3;
+input [2:0] W_4, V_GS_4, V_DS_4;
+input [2:0] W_5, V_GS_5, V_DS_5;
+input [1:0] mode;
+//output [7:0] out_n;         					// use this if using continuous assignment for out_n  // Ex: assign out_n = XXX;
+output reg [7:0] out_n; 								// use this if using procedure assignment for out_n   // Ex: always@(*) begin out_n = XXX; end
+
+//================================================================
+//    Wire & Registers 
+//================================================================
+// Declare the wire/reg you would use in your circuit
+// remember 
+// wire for port connection and cont. assignment
+// reg for proc. assignment
+wire [7:0] obj_0, obj_1, obj_2, obj_3, obj_4, obj_5;
+
+// reg and wire for sort
+wire [7:0] arr [0:5];
+
+reg [7:0] largerData_1, largerData_2, largerData_3;
+reg [7:0] smallerData_1, smallerData_2, smallerData_3;
+
+reg [7:0] largerData_4, largerData_5, largerData_6;
+reg [7:0] smallerData_4, smallerData_5, smallerData_6;
+
+reg [7:0] largerData_7, largerData_8, largerData_9;
+reg [7:0] smallerData_7, smallerData_8, smallerData_9;
+
+reg [7:0] largerData_10, largerData_11;
+reg [7:0] smallerData_10, smallerData_11;
+
+reg [7:0] largerData_12;
+reg [7:0] smallerData_12;
+
+//================================================================
+//    DESIGN
+//================================================================
+
+// --------------------------------------------------
+// write your design here
+// --------------------------------------------------
+
+/*Calculate Id or gm*/
+Cal_ID_GM cal_id_gm1(.W(W_0), .V_GS(V_GS_0), .V_DS(V_DS_0), .mode_0(mode[0]),
+                    .obj(obj_0));
+Cal_ID_GM cal_id_gm2(.W(W_1), .V_GS(V_GS_1), .V_DS(V_DS_1), .mode_0(mode[0]),
+                    .obj(obj_1));
+Cal_ID_GM cal_id_gm3(.W(W_2), .V_GS(V_GS_2), .V_DS(V_DS_2), .mode_0(mode[0]),
+                    .obj(obj_2));
+Cal_ID_GM cal_id_gm4(.W(W_3), .V_GS(V_GS_3), .V_DS(V_DS_3), .mode_0(mode[0]),
+                    .obj(obj_3));
+Cal_ID_GM cal_id_gm5(.W(W_4), .V_GS(V_GS_4), .V_DS(V_DS_4), .mode_0(mode[0]),
+                    .obj(obj_4));
+Cal_ID_GM cal_id_gm6(.W(W_5), .V_GS(V_GS_5), .V_DS(V_DS_5), .mode_0(mode[0]),
+                    .obj(obj_5));
+
+/*Sort*/
+// assign arr = input_data;
+assign arr[0] = largerData_7;
+assign arr[1] = largerData_10;
+assign arr[2] = largerData_12;
+assign arr[3] = smallerData_12;
+assign arr[4] = smallerData_11;
+assign arr[5] = smallerData_8;
+
+always @(*) begin
+  // $display("input data: %d %d %d %d %d %d\n", obj_0, obj_1, obj_2, obj_3, obj_4, obj_5);
+  // $display("mode: %d%d\n", mode[1],mode[0]);
+  
+  {largerData_1,smallerData_1} = (obj_0 >= obj_1)? {obj_0,obj_1}:{obj_1,obj_0};
+  {largerData_2,smallerData_2} = (obj_2 >= obj_3)? {obj_2,obj_3}:{obj_3,obj_2};
+  {largerData_3,smallerData_3} = (obj_4 >= obj_5)? {obj_4,obj_5}:{obj_5,obj_4};
+
+  {largerData_4,smallerData_4} = (largerData_1 >= largerData_2)?    {largerData_1,largerData_2}  :{largerData_2,largerData_1};
+  {largerData_5,smallerData_5} = (smallerData_2 >= smallerData_3)?  {smallerData_2,smallerData_3}:{smallerData_3,smallerData_2};
+  {largerData_6,smallerData_6} = (smallerData_1 >= largerData_3)?   {smallerData_1,largerData_3} :{largerData_3,smallerData_1};
+
+  {largerData_7,smallerData_7} = (largerData_4 >= largerData_6)?    {largerData_4,largerData_6}  :{largerData_6,largerData_4};
+  {largerData_8,smallerData_8} = (smallerData_6 >= smallerData_5)?  {smallerData_6,smallerData_5}:{smallerData_5,smallerData_6};
+  {largerData_9,smallerData_9} = (smallerData_4 >= largerData_5)?   {smallerData_4,largerData_5} :{largerData_5,smallerData_4};
+
+  {largerData_10,smallerData_10} = (smallerData_7 >= largerData_9)? {smallerData_7,largerData_9} :{largerData_9,smallerData_7};
+  {largerData_11,smallerData_11} = (smallerData_9 >= largerData_8)? {smallerData_9,largerData_8} :{largerData_8,smallerData_9};
+
+  {largerData_12,smallerData_12} = (smallerData_10 >= largerData_11)? {smallerData_10,largerData_11}:{largerData_11,smallerData_10};
+
+end
+
+/*Select according to mode*/
+reg [7:0] arr_tmp1 [0:2];
+reg [6:0] arr_tmp2 [0:2];
+
+reg [7:0] _avg;
+
+always @(*) begin
+  // $display("arr data: %d %d %d %d %d %d\n", arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+  // case(mode[1])
+  //   1'b0: arr_tmp1 = arr[3:5];
+  //   1'b1: arr_tmp1 = arr[0:2];
+  // endcase
+  case(mode[1])
+    1'b0: begin
+      arr_tmp1[0] = arr[3];
+      arr_tmp1[1] = arr[4];
+      arr_tmp1[2] = arr[5];
+    end
+    1'b1: begin
+      arr_tmp1[0] = arr[0];
+      arr_tmp1[1] = arr[1];
+      arr_tmp1[2] = arr[2];
+    end
+  endcase
+  
+  case(arr_tmp1[0])
+      8'd0: arr_tmp2[0] = 7'd0;
+      8'd1: arr_tmp2[0] = 7'd0;
+      8'd2: arr_tmp2[0] = 7'd0;
+      8'd3: arr_tmp2[0] = 7'd1;
+      8'd4: arr_tmp2[0] = 7'd1;
+      8'd5: arr_tmp2[0] = 7'd1;
+      8'd6: arr_tmp2[0] = 7'd2;
+      8'd7: arr_tmp2[0] = 7'd2;
+      8'd8: arr_tmp2[0] = 7'd2;
+      8'd9: arr_tmp2[0] = 7'd3;
+      8'd10: arr_tmp2[0] = 7'd3;
+      8'd11: arr_tmp2[0] = 7'd3;
+      8'd12: arr_tmp2[0] = 7'd4;
+      8'd13: arr_tmp2[0] = 7'd4;
+      8'd14: arr_tmp2[0] = 7'd4;
+      8'd15: arr_tmp2[0] = 7'd5;
+      8'd16: arr_tmp2[0] = 7'd5;
+      8'd17: arr_tmp2[0] = 7'd5;
+      8'd18: arr_tmp2[0] = 7'd6;
+      8'd19: arr_tmp2[0] = 7'd6;
+      8'd20: arr_tmp2[0] = 7'd6;
+      8'd21: arr_tmp2[0] = 7'd7;
+      8'd22: arr_tmp2[0] = 7'd7;
+      8'd23: arr_tmp2[0] = 7'd7;
+      8'd24: arr_tmp2[0] = 7'd8;
+      8'd25: arr_tmp2[0] = 7'd8;
+      8'd26: arr_tmp2[0] = 7'd8;
+      8'd27: arr_tmp2[0] = 7'd9;
+      8'd28: arr_tmp2[0] = 7'd9;
+      8'd29: arr_tmp2[0] = 7'd9;
+      8'd30: arr_tmp2[0] = 7'd10;
+      8'd31: arr_tmp2[0] = 7'd10;
+      8'd32: arr_tmp2[0] = 7'd10;
+      8'd33: arr_tmp2[0] = 7'd11;
+      8'd34: arr_tmp2[0] = 7'd11;
+      8'd35: arr_tmp2[0] = 7'd11;
+      8'd36: arr_tmp2[0] = 7'd12;
+      8'd37: arr_tmp2[0] = 7'd12;
+      8'd38: arr_tmp2[0] = 7'd12;
+      8'd39: arr_tmp2[0] = 7'd13;
+      8'd40: arr_tmp2[0] = 7'd13;
+      8'd41: arr_tmp2[0] = 7'd13;
+      8'd42: arr_tmp2[0] = 7'd14;
+      8'd43: arr_tmp2[0] = 7'd14;
+      8'd44: arr_tmp2[0] = 7'd14;
+      8'd45: arr_tmp2[0] = 7'd15;
+      8'd46: arr_tmp2[0] = 7'd15;
+      8'd47: arr_tmp2[0] = 7'd15;
+      8'd48: arr_tmp2[0] = 7'd16;
+      8'd49: arr_tmp2[0] = 7'd16;
+      8'd50: arr_tmp2[0] = 7'd16;
+      8'd51: arr_tmp2[0] = 7'd17;
+      8'd52: arr_tmp2[0] = 7'd17;
+      8'd53: arr_tmp2[0] = 7'd17;
+      8'd54: arr_tmp2[0] = 7'd18;
+      8'd55: arr_tmp2[0] = 7'd18;
+      8'd56: arr_tmp2[0] = 7'd18;
+      8'd57: arr_tmp2[0] = 7'd19;
+      8'd58: arr_tmp2[0] = 7'd19;
+      8'd59: arr_tmp2[0] = 7'd19;
+      8'd60: arr_tmp2[0] = 7'd20;
+      8'd61: arr_tmp2[0] = 7'd20;
+      8'd62: arr_tmp2[0] = 7'd20;
+      8'd63: arr_tmp2[0] = 7'd21;
+      8'd64: arr_tmp2[0] = 7'd21;
+      8'd65: arr_tmp2[0] = 7'd21;
+      8'd66: arr_tmp2[0] = 7'd22;
+      8'd67: arr_tmp2[0] = 7'd22;
+      8'd68: arr_tmp2[0] = 7'd22;
+      8'd69: arr_tmp2[0] = 7'd23;
+      8'd70: arr_tmp2[0] = 7'd23;
+      8'd71: arr_tmp2[0] = 7'd23;
+      8'd72: arr_tmp2[0] = 7'd24;
+      8'd73: arr_tmp2[0] = 7'd24;
+      8'd74: arr_tmp2[0] = 7'd24;
+      8'd75: arr_tmp2[0] = 7'd25;
+      8'd76: arr_tmp2[0] = 7'd25;
+      8'd77: arr_tmp2[0] = 7'd25;
+      8'd78: arr_tmp2[0] = 7'd26;
+      8'd79: arr_tmp2[0] = 7'd26;
+      8'd80: arr_tmp2[0] = 7'd26;
+      8'd81: arr_tmp2[0] = 7'd27;
+      8'd82: arr_tmp2[0] = 7'd27;
+      8'd83: arr_tmp2[0] = 7'd27;
+      8'd84: arr_tmp2[0] = 7'd28;
+      8'd85: arr_tmp2[0] = 7'd28;
+      8'd86: arr_tmp2[0] = 7'd28;
+      8'd87: arr_tmp2[0] = 7'd29;
+      8'd88: arr_tmp2[0] = 7'd29;
+      8'd89: arr_tmp2[0] = 7'd29;
+      8'd90: arr_tmp2[0] = 7'd30;
+      8'd91: arr_tmp2[0] = 7'd30;
+      8'd92: arr_tmp2[0] = 7'd30;
+      8'd93: arr_tmp2[0] = 7'd31;
+      8'd94: arr_tmp2[0] = 7'd31;
+      8'd95: arr_tmp2[0] = 7'd31;
+      8'd96: arr_tmp2[0] = 7'd32;
+      8'd97: arr_tmp2[0] = 7'd32;
+      8'd98: arr_tmp2[0] = 7'd32;
+      8'd99: arr_tmp2[0] = 7'd33;
+      8'd100: arr_tmp2[0] = 7'd33;
+      8'd101: arr_tmp2[0] = 7'd33;
+      8'd102: arr_tmp2[0] = 7'd34;
+      8'd103: arr_tmp2[0] = 7'd34;
+      8'd104: arr_tmp2[0] = 7'd34;
+      8'd105: arr_tmp2[0] = 7'd35;
+      8'd106: arr_tmp2[0] = 7'd35;
+      8'd107: arr_tmp2[0] = 7'd35;
+      8'd108: arr_tmp2[0] = 7'd36;
+      8'd109: arr_tmp2[0] = 7'd36;
+      8'd110: arr_tmp2[0] = 7'd36;
+      8'd111: arr_tmp2[0] = 7'd37;
+      8'd112: arr_tmp2[0] = 7'd37;
+      8'd113: arr_tmp2[0] = 7'd37;
+      8'd114: arr_tmp2[0] = 7'd38;
+      8'd115: arr_tmp2[0] = 7'd38;
+      8'd116: arr_tmp2[0] = 7'd38;
+      8'd117: arr_tmp2[0] = 7'd39;
+      8'd118: arr_tmp2[0] = 7'd39;
+      8'd119: arr_tmp2[0] = 7'd39;
+      8'd120: arr_tmp2[0] = 7'd40;
+      8'd121: arr_tmp2[0] = 7'd40;
+      8'd122: arr_tmp2[0] = 7'd40;
+      8'd123: arr_tmp2[0] = 7'd41;
+      8'd124: arr_tmp2[0] = 7'd41;
+      8'd125: arr_tmp2[0] = 7'd41;
+      8'd126: arr_tmp2[0] = 7'd42;
+      8'd127: arr_tmp2[0] = 7'd42;
+      8'd128: arr_tmp2[0] = 7'd42;
+      8'd129: arr_tmp2[0] = 7'd43;
+      8'd130: arr_tmp2[0] = 7'd43;
+      8'd131: arr_tmp2[0] = 7'd43;
+      8'd132: arr_tmp2[0] = 7'd44;
+      8'd133: arr_tmp2[0] = 7'd44;
+      8'd134: arr_tmp2[0] = 7'd44;
+      8'd135: arr_tmp2[0] = 7'd45;
+      8'd136: arr_tmp2[0] = 7'd45;
+      8'd137: arr_tmp2[0] = 7'd45;
+      8'd138: arr_tmp2[0] = 7'd46;
+      8'd139: arr_tmp2[0] = 7'd46;
+      8'd140: arr_tmp2[0] = 7'd46;
+      8'd141: arr_tmp2[0] = 7'd47;
+      8'd142: arr_tmp2[0] = 7'd47;
+      8'd143: arr_tmp2[0] = 7'd47;
+      8'd144: arr_tmp2[0] = 7'd48;
+      8'd145: arr_tmp2[0] = 7'd48;
+      8'd146: arr_tmp2[0] = 7'd48;
+      8'd147: arr_tmp2[0] = 7'd49;
+      8'd148: arr_tmp2[0] = 7'd49;
+      8'd149: arr_tmp2[0] = 7'd49;
+      8'd150: arr_tmp2[0] = 7'd50;
+      8'd151: arr_tmp2[0] = 7'd50;
+      8'd152: arr_tmp2[0] = 7'd50;
+      8'd153: arr_tmp2[0] = 7'd51;
+      8'd154: arr_tmp2[0] = 7'd51;
+      8'd155: arr_tmp2[0] = 7'd51;
+      8'd156: arr_tmp2[0] = 7'd52;
+      8'd157: arr_tmp2[0] = 7'd52;
+      8'd158: arr_tmp2[0] = 7'd52;
+      8'd159: arr_tmp2[0] = 7'd53;
+      8'd160: arr_tmp2[0] = 7'd53;
+      8'd161: arr_tmp2[0] = 7'd53;
+      8'd162: arr_tmp2[0] = 7'd54;
+      8'd163: arr_tmp2[0] = 7'd54;
+      8'd164: arr_tmp2[0] = 7'd54;
+      8'd165: arr_tmp2[0] = 7'd55;
+      8'd166: arr_tmp2[0] = 7'd55;
+      8'd167: arr_tmp2[0] = 7'd55;
+      8'd168: arr_tmp2[0] = 7'd56;
+      8'd169: arr_tmp2[0] = 7'd56;
+      8'd170: arr_tmp2[0] = 7'd56;
+      8'd171: arr_tmp2[0] = 7'd57;
+      8'd172: arr_tmp2[0] = 7'd57;
+      8'd173: arr_tmp2[0] = 7'd57;
+      8'd174: arr_tmp2[0] = 7'd58;
+      8'd175: arr_tmp2[0] = 7'd58;
+      8'd176: arr_tmp2[0] = 7'd58;
+      8'd177: arr_tmp2[0] = 7'd59;
+      8'd178: arr_tmp2[0] = 7'd59;
+      8'd179: arr_tmp2[0] = 7'd59;
+      8'd180: arr_tmp2[0] = 7'd60;
+      8'd181: arr_tmp2[0] = 7'd60;
+      8'd182: arr_tmp2[0] = 7'd60;
+      8'd183: arr_tmp2[0] = 7'd61;
+      8'd184: arr_tmp2[0] = 7'd61;
+      8'd185: arr_tmp2[0] = 7'd61;
+      8'd186: arr_tmp2[0] = 7'd62;
+      8'd187: arr_tmp2[0] = 7'd62;
+      8'd188: arr_tmp2[0] = 7'd62;
+      8'd189: arr_tmp2[0] = 7'd63;
+      8'd190: arr_tmp2[0] = 7'd63;
+      8'd191: arr_tmp2[0] = 7'd63;
+      8'd192: arr_tmp2[0] = 7'd64;
+      8'd193: arr_tmp2[0] = 7'd64;
+      8'd194: arr_tmp2[0] = 7'd64;
+      8'd195: arr_tmp2[0] = 7'd65;
+      8'd196: arr_tmp2[0] = 7'd65;
+      8'd197: arr_tmp2[0] = 7'd65;
+      8'd198: arr_tmp2[0] = 7'd66;
+      8'd199: arr_tmp2[0] = 7'd66;
+      8'd200: arr_tmp2[0] = 7'd66;
+      8'd201: arr_tmp2[0] = 7'd67;
+      8'd202: arr_tmp2[0] = 7'd67;
+      8'd203: arr_tmp2[0] = 7'd67;
+      8'd204: arr_tmp2[0] = 7'd68;
+      8'd205: arr_tmp2[0] = 7'd68;
+      8'd206: arr_tmp2[0] = 7'd68;
+      8'd207: arr_tmp2[0] = 7'd69;
+      8'd208: arr_tmp2[0] = 7'd69;
+      8'd209: arr_tmp2[0] = 7'd69;
+      8'd210: arr_tmp2[0] = 7'd70;
+      8'd211: arr_tmp2[0] = 7'd70;
+      8'd212: arr_tmp2[0] = 7'd70;
+      8'd213: arr_tmp2[0] = 7'd71;
+      8'd214: arr_tmp2[0] = 7'd71;
+      8'd215: arr_tmp2[0] = 7'd71;
+      8'd216: arr_tmp2[0] = 7'd72;
+      8'd217: arr_tmp2[0] = 7'd72;
+      8'd218: arr_tmp2[0] = 7'd72;
+      8'd219: arr_tmp2[0] = 7'd73;
+      8'd220: arr_tmp2[0] = 7'd73;
+      8'd221: arr_tmp2[0] = 7'd73;
+      8'd222: arr_tmp2[0] = 7'd74;
+      8'd223: arr_tmp2[0] = 7'd74;
+      8'd224: arr_tmp2[0] = 7'd74;
+      8'd225: arr_tmp2[0] = 7'd75;
+      8'd226: arr_tmp2[0] = 7'd75;
+      8'd227: arr_tmp2[0] = 7'd75;
+      8'd228: arr_tmp2[0] = 7'd76;
+      8'd229: arr_tmp2[0] = 7'd76;
+      8'd230: arr_tmp2[0] = 7'd76;
+      8'd231: arr_tmp2[0] = 7'd77;
+      8'd232: arr_tmp2[0] = 7'd77;
+      8'd233: arr_tmp2[0] = 7'd77;
+      8'd234: arr_tmp2[0] = 7'd78;
+      8'd235: arr_tmp2[0] = 7'd78;
+      8'd236: arr_tmp2[0] = 7'd78;
+      8'd237: arr_tmp2[0] = 7'd79;
+      8'd238: arr_tmp2[0] = 7'd79;
+      8'd239: arr_tmp2[0] = 7'd79;
+      8'd240: arr_tmp2[0] = 7'd80;
+      8'd241: arr_tmp2[0] = 7'd80;
+      8'd242: arr_tmp2[0] = 7'd80;
+      8'd243: arr_tmp2[0] = 7'd81;
+      8'd244: arr_tmp2[0] = 7'd81;
+      8'd245: arr_tmp2[0] = 7'd81;
+      8'd246: arr_tmp2[0] = 7'd82;
+      8'd247: arr_tmp2[0] = 7'd82;
+      8'd248: arr_tmp2[0] = 7'd82;
+      8'd249: arr_tmp2[0] = 7'd83;
+      8'd250: arr_tmp2[0] = 7'd83;
+      8'd251: arr_tmp2[0] = 7'd83;
+      8'd252: arr_tmp2[0] = 7'd84;
+      8'd253: arr_tmp2[0] = 7'd84;
+      8'd254: arr_tmp2[0] = 7'd84;
+      8'd255: arr_tmp2[0] = 7'd85;
+  endcase
+  case(arr_tmp1[1])
+      8'd0: arr_tmp2[1] = 7'd0;
+      8'd1: arr_tmp2[1] = 7'd0;
+      8'd2: arr_tmp2[1] = 7'd0;
+      8'd3: arr_tmp2[1] = 7'd1;
+      8'd4: arr_tmp2[1] = 7'd1;
+      8'd5: arr_tmp2[1] = 7'd1;
+      8'd6: arr_tmp2[1] = 7'd2;
+      8'd7: arr_tmp2[1] = 7'd2;
+      8'd8: arr_tmp2[1] = 7'd2;
+      8'd9: arr_tmp2[1] = 7'd3;
+      8'd10: arr_tmp2[1] = 7'd3;
+      8'd11: arr_tmp2[1] = 7'd3;
+      8'd12: arr_tmp2[1] = 7'd4;
+      8'd13: arr_tmp2[1] = 7'd4;
+      8'd14: arr_tmp2[1] = 7'd4;
+      8'd15: arr_tmp2[1] = 7'd5;
+      8'd16: arr_tmp2[1] = 7'd5;
+      8'd17: arr_tmp2[1] = 7'd5;
+      8'd18: arr_tmp2[1] = 7'd6;
+      8'd19: arr_tmp2[1] = 7'd6;
+      8'd20: arr_tmp2[1] = 7'd6;
+      8'd21: arr_tmp2[1] = 7'd7;
+      8'd22: arr_tmp2[1] = 7'd7;
+      8'd23: arr_tmp2[1] = 7'd7;
+      8'd24: arr_tmp2[1] = 7'd8;
+      8'd25: arr_tmp2[1] = 7'd8;
+      8'd26: arr_tmp2[1] = 7'd8;
+      8'd27: arr_tmp2[1] = 7'd9;
+      8'd28: arr_tmp2[1] = 7'd9;
+      8'd29: arr_tmp2[1] = 7'd9;
+      8'd30: arr_tmp2[1] = 7'd10;
+      8'd31: arr_tmp2[1] = 7'd10;
+      8'd32: arr_tmp2[1] = 7'd10;
+      8'd33: arr_tmp2[1] = 7'd11;
+      8'd34: arr_tmp2[1] = 7'd11;
+      8'd35: arr_tmp2[1] = 7'd11;
+      8'd36: arr_tmp2[1] = 7'd12;
+      8'd37: arr_tmp2[1] = 7'd12;
+      8'd38: arr_tmp2[1] = 7'd12;
+      8'd39: arr_tmp2[1] = 7'd13;
+      8'd40: arr_tmp2[1] = 7'd13;
+      8'd41: arr_tmp2[1] = 7'd13;
+      8'd42: arr_tmp2[1] = 7'd14;
+      8'd43: arr_tmp2[1] = 7'd14;
+      8'd44: arr_tmp2[1] = 7'd14;
+      8'd45: arr_tmp2[1] = 7'd15;
+      8'd46: arr_tmp2[1] = 7'd15;
+      8'd47: arr_tmp2[1] = 7'd15;
+      8'd48: arr_tmp2[1] = 7'd16;
+      8'd49: arr_tmp2[1] = 7'd16;
+      8'd50: arr_tmp2[1] = 7'd16;
+      8'd51: arr_tmp2[1] = 7'd17;
+      8'd52: arr_tmp2[1] = 7'd17;
+      8'd53: arr_tmp2[1] = 7'd17;
+      8'd54: arr_tmp2[1] = 7'd18;
+      8'd55: arr_tmp2[1] = 7'd18;
+      8'd56: arr_tmp2[1] = 7'd18;
+      8'd57: arr_tmp2[1] = 7'd19;
+      8'd58: arr_tmp2[1] = 7'd19;
+      8'd59: arr_tmp2[1] = 7'd19;
+      8'd60: arr_tmp2[1] = 7'd20;
+      8'd61: arr_tmp2[1] = 7'd20;
+      8'd62: arr_tmp2[1] = 7'd20;
+      8'd63: arr_tmp2[1] = 7'd21;
+      8'd64: arr_tmp2[1] = 7'd21;
+      8'd65: arr_tmp2[1] = 7'd21;
+      8'd66: arr_tmp2[1] = 7'd22;
+      8'd67: arr_tmp2[1] = 7'd22;
+      8'd68: arr_tmp2[1] = 7'd22;
+      8'd69: arr_tmp2[1] = 7'd23;
+      8'd70: arr_tmp2[1] = 7'd23;
+      8'd71: arr_tmp2[1] = 7'd23;
+      8'd72: arr_tmp2[1] = 7'd24;
+      8'd73: arr_tmp2[1] = 7'd24;
+      8'd74: arr_tmp2[1] = 7'd24;
+      8'd75: arr_tmp2[1] = 7'd25;
+      8'd76: arr_tmp2[1] = 7'd25;
+      8'd77: arr_tmp2[1] = 7'd25;
+      8'd78: arr_tmp2[1] = 7'd26;
+      8'd79: arr_tmp2[1] = 7'd26;
+      8'd80: arr_tmp2[1] = 7'd26;
+      8'd81: arr_tmp2[1] = 7'd27;
+      8'd82: arr_tmp2[1] = 7'd27;
+      8'd83: arr_tmp2[1] = 7'd27;
+      8'd84: arr_tmp2[1] = 7'd28;
+      8'd85: arr_tmp2[1] = 7'd28;
+      8'd86: arr_tmp2[1] = 7'd28;
+      8'd87: arr_tmp2[1] = 7'd29;
+      8'd88: arr_tmp2[1] = 7'd29;
+      8'd89: arr_tmp2[1] = 7'd29;
+      8'd90: arr_tmp2[1] = 7'd30;
+      8'd91: arr_tmp2[1] = 7'd30;
+      8'd92: arr_tmp2[1] = 7'd30;
+      8'd93: arr_tmp2[1] = 7'd31;
+      8'd94: arr_tmp2[1] = 7'd31;
+      8'd95: arr_tmp2[1] = 7'd31;
+      8'd96: arr_tmp2[1] = 7'd32;
+      8'd97: arr_tmp2[1] = 7'd32;
+      8'd98: arr_tmp2[1] = 7'd32;
+      8'd99: arr_tmp2[1] = 7'd33;
+      8'd100: arr_tmp2[1] = 7'd33;
+      8'd101: arr_tmp2[1] = 7'd33;
+      8'd102: arr_tmp2[1] = 7'd34;
+      8'd103: arr_tmp2[1] = 7'd34;
+      8'd104: arr_tmp2[1] = 7'd34;
+      8'd105: arr_tmp2[1] = 7'd35;
+      8'd106: arr_tmp2[1] = 7'd35;
+      8'd107: arr_tmp2[1] = 7'd35;
+      8'd108: arr_tmp2[1] = 7'd36;
+      8'd109: arr_tmp2[1] = 7'd36;
+      8'd110: arr_tmp2[1] = 7'd36;
+      8'd111: arr_tmp2[1] = 7'd37;
+      8'd112: arr_tmp2[1] = 7'd37;
+      8'd113: arr_tmp2[1] = 7'd37;
+      8'd114: arr_tmp2[1] = 7'd38;
+      8'd115: arr_tmp2[1] = 7'd38;
+      8'd116: arr_tmp2[1] = 7'd38;
+      8'd117: arr_tmp2[1] = 7'd39;
+      8'd118: arr_tmp2[1] = 7'd39;
+      8'd119: arr_tmp2[1] = 7'd39;
+      8'd120: arr_tmp2[1] = 7'd40;
+      8'd121: arr_tmp2[1] = 7'd40;
+      8'd122: arr_tmp2[1] = 7'd40;
+      8'd123: arr_tmp2[1] = 7'd41;
+      8'd124: arr_tmp2[1] = 7'd41;
+      8'd125: arr_tmp2[1] = 7'd41;
+      8'd126: arr_tmp2[1] = 7'd42;
+      8'd127: arr_tmp2[1] = 7'd42;
+      8'd128: arr_tmp2[1] = 7'd42;
+      8'd129: arr_tmp2[1] = 7'd43;
+      8'd130: arr_tmp2[1] = 7'd43;
+      8'd131: arr_tmp2[1] = 7'd43;
+      8'd132: arr_tmp2[1] = 7'd44;
+      8'd133: arr_tmp2[1] = 7'd44;
+      8'd134: arr_tmp2[1] = 7'd44;
+      8'd135: arr_tmp2[1] = 7'd45;
+      8'd136: arr_tmp2[1] = 7'd45;
+      8'd137: arr_tmp2[1] = 7'd45;
+      8'd138: arr_tmp2[1] = 7'd46;
+      8'd139: arr_tmp2[1] = 7'd46;
+      8'd140: arr_tmp2[1] = 7'd46;
+      8'd141: arr_tmp2[1] = 7'd47;
+      8'd142: arr_tmp2[1] = 7'd47;
+      8'd143: arr_tmp2[1] = 7'd47;
+      8'd144: arr_tmp2[1] = 7'd48;
+      8'd145: arr_tmp2[1] = 7'd48;
+      8'd146: arr_tmp2[1] = 7'd48;
+      8'd147: arr_tmp2[1] = 7'd49;
+      8'd148: arr_tmp2[1] = 7'd49;
+      8'd149: arr_tmp2[1] = 7'd49;
+      8'd150: arr_tmp2[1] = 7'd50;
+      8'd151: arr_tmp2[1] = 7'd50;
+      8'd152: arr_tmp2[1] = 7'd50;
+      8'd153: arr_tmp2[1] = 7'd51;
+      8'd154: arr_tmp2[1] = 7'd51;
+      8'd155: arr_tmp2[1] = 7'd51;
+      8'd156: arr_tmp2[1] = 7'd52;
+      8'd157: arr_tmp2[1] = 7'd52;
+      8'd158: arr_tmp2[1] = 7'd52;
+      8'd159: arr_tmp2[1] = 7'd53;
+      8'd160: arr_tmp2[1] = 7'd53;
+      8'd161: arr_tmp2[1] = 7'd53;
+      8'd162: arr_tmp2[1] = 7'd54;
+      8'd163: arr_tmp2[1] = 7'd54;
+      8'd164: arr_tmp2[1] = 7'd54;
+      8'd165: arr_tmp2[1] = 7'd55;
+      8'd166: arr_tmp2[1] = 7'd55;
+      8'd167: arr_tmp2[1] = 7'd55;
+      8'd168: arr_tmp2[1] = 7'd56;
+      8'd169: arr_tmp2[1] = 7'd56;
+      8'd170: arr_tmp2[1] = 7'd56;
+      8'd171: arr_tmp2[1] = 7'd57;
+      8'd172: arr_tmp2[1] = 7'd57;
+      8'd173: arr_tmp2[1] = 7'd57;
+      8'd174: arr_tmp2[1] = 7'd58;
+      8'd175: arr_tmp2[1] = 7'd58;
+      8'd176: arr_tmp2[1] = 7'd58;
+      8'd177: arr_tmp2[1] = 7'd59;
+      8'd178: arr_tmp2[1] = 7'd59;
+      8'd179: arr_tmp2[1] = 7'd59;
+      8'd180: arr_tmp2[1] = 7'd60;
+      8'd181: arr_tmp2[1] = 7'd60;
+      8'd182: arr_tmp2[1] = 7'd60;
+      8'd183: arr_tmp2[1] = 7'd61;
+      8'd184: arr_tmp2[1] = 7'd61;
+      8'd185: arr_tmp2[1] = 7'd61;
+      8'd186: arr_tmp2[1] = 7'd62;
+      8'd187: arr_tmp2[1] = 7'd62;
+      8'd188: arr_tmp2[1] = 7'd62;
+      8'd189: arr_tmp2[1] = 7'd63;
+      8'd190: arr_tmp2[1] = 7'd63;
+      8'd191: arr_tmp2[1] = 7'd63;
+      8'd192: arr_tmp2[1] = 7'd64;
+      8'd193: arr_tmp2[1] = 7'd64;
+      8'd194: arr_tmp2[1] = 7'd64;
+      8'd195: arr_tmp2[1] = 7'd65;
+      8'd196: arr_tmp2[1] = 7'd65;
+      8'd197: arr_tmp2[1] = 7'd65;
+      8'd198: arr_tmp2[1] = 7'd66;
+      8'd199: arr_tmp2[1] = 7'd66;
+      8'd200: arr_tmp2[1] = 7'd66;
+      8'd201: arr_tmp2[1] = 7'd67;
+      8'd202: arr_tmp2[1] = 7'd67;
+      8'd203: arr_tmp2[1] = 7'd67;
+      8'd204: arr_tmp2[1] = 7'd68;
+      8'd205: arr_tmp2[1] = 7'd68;
+      8'd206: arr_tmp2[1] = 7'd68;
+      8'd207: arr_tmp2[1] = 7'd69;
+      8'd208: arr_tmp2[1] = 7'd69;
+      8'd209: arr_tmp2[1] = 7'd69;
+      8'd210: arr_tmp2[1] = 7'd70;
+      8'd211: arr_tmp2[1] = 7'd70;
+      8'd212: arr_tmp2[1] = 7'd70;
+      8'd213: arr_tmp2[1] = 7'd71;
+      8'd214: arr_tmp2[1] = 7'd71;
+      8'd215: arr_tmp2[1] = 7'd71;
+      8'd216: arr_tmp2[1] = 7'd72;
+      8'd217: arr_tmp2[1] = 7'd72;
+      8'd218: arr_tmp2[1] = 7'd72;
+      8'd219: arr_tmp2[1] = 7'd73;
+      8'd220: arr_tmp2[1] = 7'd73;
+      8'd221: arr_tmp2[1] = 7'd73;
+      8'd222: arr_tmp2[1] = 7'd74;
+      8'd223: arr_tmp2[1] = 7'd74;
+      8'd224: arr_tmp2[1] = 7'd74;
+      8'd225: arr_tmp2[1] = 7'd75;
+      8'd226: arr_tmp2[1] = 7'd75;
+      8'd227: arr_tmp2[1] = 7'd75;
+      8'd228: arr_tmp2[1] = 7'd76;
+      8'd229: arr_tmp2[1] = 7'd76;
+      8'd230: arr_tmp2[1] = 7'd76;
+      8'd231: arr_tmp2[1] = 7'd77;
+      8'd232: arr_tmp2[1] = 7'd77;
+      8'd233: arr_tmp2[1] = 7'd77;
+      8'd234: arr_tmp2[1] = 7'd78;
+      8'd235: arr_tmp2[1] = 7'd78;
+      8'd236: arr_tmp2[1] = 7'd78;
+      8'd237: arr_tmp2[1] = 7'd79;
+      8'd238: arr_tmp2[1] = 7'd79;
+      8'd239: arr_tmp2[1] = 7'd79;
+      8'd240: arr_tmp2[1] = 7'd80;
+      8'd241: arr_tmp2[1] = 7'd80;
+      8'd242: arr_tmp2[1] = 7'd80;
+      8'd243: arr_tmp2[1] = 7'd81;
+      8'd244: arr_tmp2[1] = 7'd81;
+      8'd245: arr_tmp2[1] = 7'd81;
+      8'd246: arr_tmp2[1] = 7'd82;
+      8'd247: arr_tmp2[1] = 7'd82;
+      8'd248: arr_tmp2[1] = 7'd82;
+      8'd249: arr_tmp2[1] = 7'd83;
+      8'd250: arr_tmp2[1] = 7'd83;
+      8'd251: arr_tmp2[1] = 7'd83;
+      8'd252: arr_tmp2[1] = 7'd84;
+      8'd253: arr_tmp2[1] = 7'd84;
+      8'd254: arr_tmp2[1] = 7'd84;
+      8'd255: arr_tmp2[1] = 7'd85;
+  endcase
+  case(arr_tmp1[2])
+      8'd0: arr_tmp2[2] = 7'd0;
+      8'd1: arr_tmp2[2] = 7'd0;
+      8'd2: arr_tmp2[2] = 7'd0;
+      8'd3: arr_tmp2[2] = 7'd1;
+      8'd4: arr_tmp2[2] = 7'd1;
+      8'd5: arr_tmp2[2] = 7'd1;
+      8'd6: arr_tmp2[2] = 7'd2;
+      8'd7: arr_tmp2[2] = 7'd2;
+      8'd8: arr_tmp2[2] = 7'd2;
+      8'd9: arr_tmp2[2] = 7'd3;
+      8'd10: arr_tmp2[2] = 7'd3;
+      8'd11: arr_tmp2[2] = 7'd3;
+      8'd12: arr_tmp2[2] = 7'd4;
+      8'd13: arr_tmp2[2] = 7'd4;
+      8'd14: arr_tmp2[2] = 7'd4;
+      8'd15: arr_tmp2[2] = 7'd5;
+      8'd16: arr_tmp2[2] = 7'd5;
+      8'd17: arr_tmp2[2] = 7'd5;
+      8'd18: arr_tmp2[2] = 7'd6;
+      8'd19: arr_tmp2[2] = 7'd6;
+      8'd20: arr_tmp2[2] = 7'd6;
+      8'd21: arr_tmp2[2] = 7'd7;
+      8'd22: arr_tmp2[2] = 7'd7;
+      8'd23: arr_tmp2[2] = 7'd7;
+      8'd24: arr_tmp2[2] = 7'd8;
+      8'd25: arr_tmp2[2] = 7'd8;
+      8'd26: arr_tmp2[2] = 7'd8;
+      8'd27: arr_tmp2[2] = 7'd9;
+      8'd28: arr_tmp2[2] = 7'd9;
+      8'd29: arr_tmp2[2] = 7'd9;
+      8'd30: arr_tmp2[2] = 7'd10;
+      8'd31: arr_tmp2[2] = 7'd10;
+      8'd32: arr_tmp2[2] = 7'd10;
+      8'd33: arr_tmp2[2] = 7'd11;
+      8'd34: arr_tmp2[2] = 7'd11;
+      8'd35: arr_tmp2[2] = 7'd11;
+      8'd36: arr_tmp2[2] = 7'd12;
+      8'd37: arr_tmp2[2] = 7'd12;
+      8'd38: arr_tmp2[2] = 7'd12;
+      8'd39: arr_tmp2[2] = 7'd13;
+      8'd40: arr_tmp2[2] = 7'd13;
+      8'd41: arr_tmp2[2] = 7'd13;
+      8'd42: arr_tmp2[2] = 7'd14;
+      8'd43: arr_tmp2[2] = 7'd14;
+      8'd44: arr_tmp2[2] = 7'd14;
+      8'd45: arr_tmp2[2] = 7'd15;
+      8'd46: arr_tmp2[2] = 7'd15;
+      8'd47: arr_tmp2[2] = 7'd15;
+      8'd48: arr_tmp2[2] = 7'd16;
+      8'd49: arr_tmp2[2] = 7'd16;
+      8'd50: arr_tmp2[2] = 7'd16;
+      8'd51: arr_tmp2[2] = 7'd17;
+      8'd52: arr_tmp2[2] = 7'd17;
+      8'd53: arr_tmp2[2] = 7'd17;
+      8'd54: arr_tmp2[2] = 7'd18;
+      8'd55: arr_tmp2[2] = 7'd18;
+      8'd56: arr_tmp2[2] = 7'd18;
+      8'd57: arr_tmp2[2] = 7'd19;
+      8'd58: arr_tmp2[2] = 7'd19;
+      8'd59: arr_tmp2[2] = 7'd19;
+      8'd60: arr_tmp2[2] = 7'd20;
+      8'd61: arr_tmp2[2] = 7'd20;
+      8'd62: arr_tmp2[2] = 7'd20;
+      8'd63: arr_tmp2[2] = 7'd21;
+      8'd64: arr_tmp2[2] = 7'd21;
+      8'd65: arr_tmp2[2] = 7'd21;
+      8'd66: arr_tmp2[2] = 7'd22;
+      8'd67: arr_tmp2[2] = 7'd22;
+      8'd68: arr_tmp2[2] = 7'd22;
+      8'd69: arr_tmp2[2] = 7'd23;
+      8'd70: arr_tmp2[2] = 7'd23;
+      8'd71: arr_tmp2[2] = 7'd23;
+      8'd72: arr_tmp2[2] = 7'd24;
+      8'd73: arr_tmp2[2] = 7'd24;
+      8'd74: arr_tmp2[2] = 7'd24;
+      8'd75: arr_tmp2[2] = 7'd25;
+      8'd76: arr_tmp2[2] = 7'd25;
+      8'd77: arr_tmp2[2] = 7'd25;
+      8'd78: arr_tmp2[2] = 7'd26;
+      8'd79: arr_tmp2[2] = 7'd26;
+      8'd80: arr_tmp2[2] = 7'd26;
+      8'd81: arr_tmp2[2] = 7'd27;
+      8'd82: arr_tmp2[2] = 7'd27;
+      8'd83: arr_tmp2[2] = 7'd27;
+      8'd84: arr_tmp2[2] = 7'd28;
+      8'd85: arr_tmp2[2] = 7'd28;
+      8'd86: arr_tmp2[2] = 7'd28;
+      8'd87: arr_tmp2[2] = 7'd29;
+      8'd88: arr_tmp2[2] = 7'd29;
+      8'd89: arr_tmp2[2] = 7'd29;
+      8'd90: arr_tmp2[2] = 7'd30;
+      8'd91: arr_tmp2[2] = 7'd30;
+      8'd92: arr_tmp2[2] = 7'd30;
+      8'd93: arr_tmp2[2] = 7'd31;
+      8'd94: arr_tmp2[2] = 7'd31;
+      8'd95: arr_tmp2[2] = 7'd31;
+      8'd96: arr_tmp2[2] = 7'd32;
+      8'd97: arr_tmp2[2] = 7'd32;
+      8'd98: arr_tmp2[2] = 7'd32;
+      8'd99: arr_tmp2[2] = 7'd33;
+      8'd100: arr_tmp2[2] = 7'd33;
+      8'd101: arr_tmp2[2] = 7'd33;
+      8'd102: arr_tmp2[2] = 7'd34;
+      8'd103: arr_tmp2[2] = 7'd34;
+      8'd104: arr_tmp2[2] = 7'd34;
+      8'd105: arr_tmp2[2] = 7'd35;
+      8'd106: arr_tmp2[2] = 7'd35;
+      8'd107: arr_tmp2[2] = 7'd35;
+      8'd108: arr_tmp2[2] = 7'd36;
+      8'd109: arr_tmp2[2] = 7'd36;
+      8'd110: arr_tmp2[2] = 7'd36;
+      8'd111: arr_tmp2[2] = 7'd37;
+      8'd112: arr_tmp2[2] = 7'd37;
+      8'd113: arr_tmp2[2] = 7'd37;
+      8'd114: arr_tmp2[2] = 7'd38;
+      8'd115: arr_tmp2[2] = 7'd38;
+      8'd116: arr_tmp2[2] = 7'd38;
+      8'd117: arr_tmp2[2] = 7'd39;
+      8'd118: arr_tmp2[2] = 7'd39;
+      8'd119: arr_tmp2[2] = 7'd39;
+      8'd120: arr_tmp2[2] = 7'd40;
+      8'd121: arr_tmp2[2] = 7'd40;
+      8'd122: arr_tmp2[2] = 7'd40;
+      8'd123: arr_tmp2[2] = 7'd41;
+      8'd124: arr_tmp2[2] = 7'd41;
+      8'd125: arr_tmp2[2] = 7'd41;
+      8'd126: arr_tmp2[2] = 7'd42;
+      8'd127: arr_tmp2[2] = 7'd42;
+      8'd128: arr_tmp2[2] = 7'd42;
+      8'd129: arr_tmp2[2] = 7'd43;
+      8'd130: arr_tmp2[2] = 7'd43;
+      8'd131: arr_tmp2[2] = 7'd43;
+      8'd132: arr_tmp2[2] = 7'd44;
+      8'd133: arr_tmp2[2] = 7'd44;
+      8'd134: arr_tmp2[2] = 7'd44;
+      8'd135: arr_tmp2[2] = 7'd45;
+      8'd136: arr_tmp2[2] = 7'd45;
+      8'd137: arr_tmp2[2] = 7'd45;
+      8'd138: arr_tmp2[2] = 7'd46;
+      8'd139: arr_tmp2[2] = 7'd46;
+      8'd140: arr_tmp2[2] = 7'd46;
+      8'd141: arr_tmp2[2] = 7'd47;
+      8'd142: arr_tmp2[2] = 7'd47;
+      8'd143: arr_tmp2[2] = 7'd47;
+      8'd144: arr_tmp2[2] = 7'd48;
+      8'd145: arr_tmp2[2] = 7'd48;
+      8'd146: arr_tmp2[2] = 7'd48;
+      8'd147: arr_tmp2[2] = 7'd49;
+      8'd148: arr_tmp2[2] = 7'd49;
+      8'd149: arr_tmp2[2] = 7'd49;
+      8'd150: arr_tmp2[2] = 7'd50;
+      8'd151: arr_tmp2[2] = 7'd50;
+      8'd152: arr_tmp2[2] = 7'd50;
+      8'd153: arr_tmp2[2] = 7'd51;
+      8'd154: arr_tmp2[2] = 7'd51;
+      8'd155: arr_tmp2[2] = 7'd51;
+      8'd156: arr_tmp2[2] = 7'd52;
+      8'd157: arr_tmp2[2] = 7'd52;
+      8'd158: arr_tmp2[2] = 7'd52;
+      8'd159: arr_tmp2[2] = 7'd53;
+      8'd160: arr_tmp2[2] = 7'd53;
+      8'd161: arr_tmp2[2] = 7'd53;
+      8'd162: arr_tmp2[2] = 7'd54;
+      8'd163: arr_tmp2[2] = 7'd54;
+      8'd164: arr_tmp2[2] = 7'd54;
+      8'd165: arr_tmp2[2] = 7'd55;
+      8'd166: arr_tmp2[2] = 7'd55;
+      8'd167: arr_tmp2[2] = 7'd55;
+      8'd168: arr_tmp2[2] = 7'd56;
+      8'd169: arr_tmp2[2] = 7'd56;
+      8'd170: arr_tmp2[2] = 7'd56;
+      8'd171: arr_tmp2[2] = 7'd57;
+      8'd172: arr_tmp2[2] = 7'd57;
+      8'd173: arr_tmp2[2] = 7'd57;
+      8'd174: arr_tmp2[2] = 7'd58;
+      8'd175: arr_tmp2[2] = 7'd58;
+      8'd176: arr_tmp2[2] = 7'd58;
+      8'd177: arr_tmp2[2] = 7'd59;
+      8'd178: arr_tmp2[2] = 7'd59;
+      8'd179: arr_tmp2[2] = 7'd59;
+      8'd180: arr_tmp2[2] = 7'd60;
+      8'd181: arr_tmp2[2] = 7'd60;
+      8'd182: arr_tmp2[2] = 7'd60;
+      8'd183: arr_tmp2[2] = 7'd61;
+      8'd184: arr_tmp2[2] = 7'd61;
+      8'd185: arr_tmp2[2] = 7'd61;
+      8'd186: arr_tmp2[2] = 7'd62;
+      8'd187: arr_tmp2[2] = 7'd62;
+      8'd188: arr_tmp2[2] = 7'd62;
+      8'd189: arr_tmp2[2] = 7'd63;
+      8'd190: arr_tmp2[2] = 7'd63;
+      8'd191: arr_tmp2[2] = 7'd63;
+      8'd192: arr_tmp2[2] = 7'd64;
+      8'd193: arr_tmp2[2] = 7'd64;
+      8'd194: arr_tmp2[2] = 7'd64;
+      8'd195: arr_tmp2[2] = 7'd65;
+      8'd196: arr_tmp2[2] = 7'd65;
+      8'd197: arr_tmp2[2] = 7'd65;
+      8'd198: arr_tmp2[2] = 7'd66;
+      8'd199: arr_tmp2[2] = 7'd66;
+      8'd200: arr_tmp2[2] = 7'd66;
+      8'd201: arr_tmp2[2] = 7'd67;
+      8'd202: arr_tmp2[2] = 7'd67;
+      8'd203: arr_tmp2[2] = 7'd67;
+      8'd204: arr_tmp2[2] = 7'd68;
+      8'd205: arr_tmp2[2] = 7'd68;
+      8'd206: arr_tmp2[2] = 7'd68;
+      8'd207: arr_tmp2[2] = 7'd69;
+      8'd208: arr_tmp2[2] = 7'd69;
+      8'd209: arr_tmp2[2] = 7'd69;
+      8'd210: arr_tmp2[2] = 7'd70;
+      8'd211: arr_tmp2[2] = 7'd70;
+      8'd212: arr_tmp2[2] = 7'd70;
+      8'd213: arr_tmp2[2] = 7'd71;
+      8'd214: arr_tmp2[2] = 7'd71;
+      8'd215: arr_tmp2[2] = 7'd71;
+      8'd216: arr_tmp2[2] = 7'd72;
+      8'd217: arr_tmp2[2] = 7'd72;
+      8'd218: arr_tmp2[2] = 7'd72;
+      8'd219: arr_tmp2[2] = 7'd73;
+      8'd220: arr_tmp2[2] = 7'd73;
+      8'd221: arr_tmp2[2] = 7'd73;
+      8'd222: arr_tmp2[2] = 7'd74;
+      8'd223: arr_tmp2[2] = 7'd74;
+      8'd224: arr_tmp2[2] = 7'd74;
+      8'd225: arr_tmp2[2] = 7'd75;
+      8'd226: arr_tmp2[2] = 7'd75;
+      8'd227: arr_tmp2[2] = 7'd75;
+      8'd228: arr_tmp2[2] = 7'd76;
+      8'd229: arr_tmp2[2] = 7'd76;
+      8'd230: arr_tmp2[2] = 7'd76;
+      8'd231: arr_tmp2[2] = 7'd77;
+      8'd232: arr_tmp2[2] = 7'd77;
+      8'd233: arr_tmp2[2] = 7'd77;
+      8'd234: arr_tmp2[2] = 7'd78;
+      8'd235: arr_tmp2[2] = 7'd78;
+      8'd236: arr_tmp2[2] = 7'd78;
+      8'd237: arr_tmp2[2] = 7'd79;
+      8'd238: arr_tmp2[2] = 7'd79;
+      8'd239: arr_tmp2[2] = 7'd79;
+      8'd240: arr_tmp2[2] = 7'd80;
+      8'd241: arr_tmp2[2] = 7'd80;
+      8'd242: arr_tmp2[2] = 7'd80;
+      8'd243: arr_tmp2[2] = 7'd81;
+      8'd244: arr_tmp2[2] = 7'd81;
+      8'd245: arr_tmp2[2] = 7'd81;
+      8'd246: arr_tmp2[2] = 7'd82;
+      8'd247: arr_tmp2[2] = 7'd82;
+      8'd248: arr_tmp2[2] = 7'd82;
+      8'd249: arr_tmp2[2] = 7'd83;
+      8'd250: arr_tmp2[2] = 7'd83;
+      8'd251: arr_tmp2[2] = 7'd83;
+      8'd252: arr_tmp2[2] = 7'd84;
+      8'd253: arr_tmp2[2] = 7'd84;
+      8'd254: arr_tmp2[2] = 7'd84;
+      8'd255: arr_tmp2[2] = 7'd85;
+  endcase
+
+  case(mode[0])
+    1'b0: _avg = arr_tmp2[0] + arr_tmp2[1] + arr_tmp2[2];
+    // 1'b1: _avg = (3*arr_tmp2[0] + 4*arr_tmp2[1] + 5*arr_tmp2[2]) >> 2;
+    1'b1: begin
+      _avg = ((arr_tmp2[0] * 3 + arr_tmp2[2] * 5) >> 2) + arr_tmp2[1];
+    end
+  endcase
+
+  // case(mode)
+  //   2'b00: _avg = arr[3] + arr[4] + arr[5];
+  //   2'b01: _avg = (3*arr[3] + 4*arr[4] + 5*arr[5]) >> 2;
+  //   2'b10: _avg = arr[0] + arr[1] + arr[2];
+  //   2'b11: _avg = (3*arr[0] + 4*arr[1] + 5*arr[2]) >> 2;
+  // endcase
+end
+
+/*Output*/
+// out_n = _avg / 3
+always @(*) begin
+  case(_avg)
+    8'd0: out_n = 7'd0;
+    8'd1: out_n = 7'd0;
+    8'd2: out_n = 7'd0;
+    8'd3: out_n = 7'd1;
+    8'd4: out_n = 7'd1;
+    8'd5: out_n = 7'd1;
+    8'd6: out_n = 7'd2;
+    8'd7: out_n = 7'd2;
+    8'd8: out_n = 7'd2;
+    8'd9: out_n = 7'd3;
+    8'd10: out_n = 7'd3;
+    8'd11: out_n = 7'd3;
+    8'd12: out_n = 7'd4;
+    8'd13: out_n = 7'd4;
+    8'd14: out_n = 7'd4;
+    8'd15: out_n = 7'd5;
+    8'd16: out_n = 7'd5;
+    8'd17: out_n = 7'd5;
+    8'd18: out_n = 7'd6;
+    8'd19: out_n = 7'd6;
+    8'd20: out_n = 7'd6;
+    8'd21: out_n = 7'd7;
+    8'd22: out_n = 7'd7;
+    8'd23: out_n = 7'd7;
+    8'd24: out_n = 7'd8;
+    8'd25: out_n = 7'd8;
+    8'd26: out_n = 7'd8;
+    8'd27: out_n = 7'd9;
+    8'd28: out_n = 7'd9;
+    8'd29: out_n = 7'd9;
+    8'd30: out_n = 7'd10;
+    8'd31: out_n = 7'd10;
+    8'd32: out_n = 7'd10;
+    8'd33: out_n = 7'd11;
+    8'd34: out_n = 7'd11;
+    8'd35: out_n = 7'd11;
+    8'd36: out_n = 7'd12;
+    8'd37: out_n = 7'd12;
+    8'd38: out_n = 7'd12;
+    8'd39: out_n = 7'd13;
+    8'd40: out_n = 7'd13;
+    8'd41: out_n = 7'd13;
+    8'd42: out_n = 7'd14;
+    8'd43: out_n = 7'd14;
+    8'd44: out_n = 7'd14;
+    8'd45: out_n = 7'd15;
+    8'd46: out_n = 7'd15;
+    8'd47: out_n = 7'd15;
+    8'd48: out_n = 7'd16;
+    8'd49: out_n = 7'd16;
+    8'd50: out_n = 7'd16;
+    8'd51: out_n = 7'd17;
+    8'd52: out_n = 7'd17;
+    8'd53: out_n = 7'd17;
+    8'd54: out_n = 7'd18;
+    8'd55: out_n = 7'd18;
+    8'd56: out_n = 7'd18;
+    8'd57: out_n = 7'd19;
+    8'd58: out_n = 7'd19;
+    8'd59: out_n = 7'd19;
+    8'd60: out_n = 7'd20;
+    8'd61: out_n = 7'd20;
+    8'd62: out_n = 7'd20;
+    8'd63: out_n = 7'd21;
+    8'd64: out_n = 7'd21;
+    8'd65: out_n = 7'd21;
+    8'd66: out_n = 7'd22;
+    8'd67: out_n = 7'd22;
+    8'd68: out_n = 7'd22;
+    8'd69: out_n = 7'd23;
+    8'd70: out_n = 7'd23;
+    8'd71: out_n = 7'd23;
+    8'd72: out_n = 7'd24;
+    8'd73: out_n = 7'd24;
+    8'd74: out_n = 7'd24;
+    8'd75: out_n = 7'd25;
+    8'd76: out_n = 7'd25;
+    8'd77: out_n = 7'd25;
+    8'd78: out_n = 7'd26;
+    8'd79: out_n = 7'd26;
+    8'd80: out_n = 7'd26;
+    8'd81: out_n = 7'd27;
+    8'd82: out_n = 7'd27;
+    8'd83: out_n = 7'd27;
+    8'd84: out_n = 7'd28;
+    8'd85: out_n = 7'd28;
+    8'd86: out_n = 7'd28;
+    8'd87: out_n = 7'd29;
+    8'd88: out_n = 7'd29;
+    8'd89: out_n = 7'd29;
+    8'd90: out_n = 7'd30;
+    8'd91: out_n = 7'd30;
+    8'd92: out_n = 7'd30;
+    8'd93: out_n = 7'd31;
+    8'd94: out_n = 7'd31;
+    8'd95: out_n = 7'd31;
+    8'd96: out_n = 7'd32;
+    8'd97: out_n = 7'd32;
+    8'd98: out_n = 7'd32;
+    8'd99: out_n = 7'd33;
+    8'd100: out_n = 7'd33;
+    8'd101: out_n = 7'd33;
+    8'd102: out_n = 7'd34;
+    8'd103: out_n = 7'd34;
+    8'd104: out_n = 7'd34;
+    8'd105: out_n = 7'd35;
+    8'd106: out_n = 7'd35;
+    8'd107: out_n = 7'd35;
+    8'd108: out_n = 7'd36;
+    8'd109: out_n = 7'd36;
+    8'd110: out_n = 7'd36;
+    8'd111: out_n = 7'd37;
+    8'd112: out_n = 7'd37;
+    8'd113: out_n = 7'd37;
+    8'd114: out_n = 7'd38;
+    8'd115: out_n = 7'd38;
+    8'd116: out_n = 7'd38;
+    8'd117: out_n = 7'd39;
+    8'd118: out_n = 7'd39;
+    8'd119: out_n = 7'd39;
+    8'd120: out_n = 7'd40;
+    8'd121: out_n = 7'd40;
+    8'd122: out_n = 7'd40;
+    8'd123: out_n = 7'd41;
+    8'd124: out_n = 7'd41;
+    8'd125: out_n = 7'd41;
+    8'd126: out_n = 7'd42;
+    8'd127: out_n = 7'd42;
+    8'd128: out_n = 7'd42;
+    8'd129: out_n = 7'd43;
+    8'd130: out_n = 7'd43;
+    8'd131: out_n = 7'd43;
+    8'd132: out_n = 7'd44;
+    8'd133: out_n = 7'd44;
+    8'd134: out_n = 7'd44;
+    8'd135: out_n = 7'd45;
+    8'd136: out_n = 7'd45;
+    8'd137: out_n = 7'd45;
+    8'd138: out_n = 7'd46;
+    8'd139: out_n = 7'd46;
+    8'd140: out_n = 7'd46;
+    8'd141: out_n = 7'd47;
+    8'd142: out_n = 7'd47;
+    8'd143: out_n = 7'd47;
+    8'd144: out_n = 7'd48;
+    8'd145: out_n = 7'd48;
+    8'd146: out_n = 7'd48;
+    8'd147: out_n = 7'd49;
+    8'd148: out_n = 7'd49;
+    8'd149: out_n = 7'd49;
+    8'd150: out_n = 7'd50;
+    8'd151: out_n = 7'd50;
+    8'd152: out_n = 7'd50;
+    8'd153: out_n = 7'd51;
+    8'd154: out_n = 7'd51;
+    8'd155: out_n = 7'd51;
+    8'd156: out_n = 7'd52;
+    8'd157: out_n = 7'd52;
+    8'd158: out_n = 7'd52;
+    8'd159: out_n = 7'd53;
+    8'd160: out_n = 7'd53;
+    8'd161: out_n = 7'd53;
+    8'd162: out_n = 7'd54;
+    8'd163: out_n = 7'd54;
+    8'd164: out_n = 7'd54;
+    8'd165: out_n = 7'd55;
+    8'd166: out_n = 7'd55;
+    8'd167: out_n = 7'd55;
+    8'd168: out_n = 7'd56;
+    8'd169: out_n = 7'd56;
+    8'd170: out_n = 7'd56;
+    8'd171: out_n = 7'd57;
+    8'd172: out_n = 7'd57;
+    8'd173: out_n = 7'd57;
+    8'd174: out_n = 7'd58;
+    8'd175: out_n = 7'd58;
+    8'd176: out_n = 7'd58;
+    8'd177: out_n = 7'd59;
+    8'd178: out_n = 7'd59;
+    8'd179: out_n = 7'd59;
+    8'd180: out_n = 7'd60;
+    8'd181: out_n = 7'd60;
+    8'd182: out_n = 7'd60;
+    8'd183: out_n = 7'd61;
+    8'd184: out_n = 7'd61;
+    8'd185: out_n = 7'd61;
+    8'd186: out_n = 7'd62;
+    8'd187: out_n = 7'd62;
+    8'd188: out_n = 7'd62;
+    8'd189: out_n = 7'd63;
+    8'd190: out_n = 7'd63;
+    8'd191: out_n = 7'd63;
+    8'd192: out_n = 7'd64;
+    8'd193: out_n = 7'd64;
+    8'd194: out_n = 7'd64;
+    8'd195: out_n = 7'd65;
+    8'd196: out_n = 7'd65;
+    8'd197: out_n = 7'd65;
+    8'd198: out_n = 7'd66;
+    8'd199: out_n = 7'd66;
+    8'd200: out_n = 7'd66;
+    8'd201: out_n = 7'd67;
+    8'd202: out_n = 7'd67;
+    8'd203: out_n = 7'd67;
+    8'd204: out_n = 7'd68;
+    8'd205: out_n = 7'd68;
+    8'd206: out_n = 7'd68;
+    8'd207: out_n = 7'd69;
+    8'd208: out_n = 7'd69;
+    8'd209: out_n = 7'd69;
+    8'd210: out_n = 7'd70;
+    8'd211: out_n = 7'd70;
+    8'd212: out_n = 7'd70;
+    8'd213: out_n = 7'd71;
+    8'd214: out_n = 7'd71;
+    8'd215: out_n = 7'd71;
+    8'd216: out_n = 7'd72;
+    8'd217: out_n = 7'd72;
+    8'd218: out_n = 7'd72;
+    8'd219: out_n = 7'd73;
+    8'd220: out_n = 7'd73;
+    8'd221: out_n = 7'd73;
+    8'd222: out_n = 7'd74;
+    8'd223: out_n = 7'd74;
+    8'd224: out_n = 7'd74;
+    8'd225: out_n = 7'd75;
+    8'd226: out_n = 7'd75;
+    8'd227: out_n = 7'd75;
+    8'd228: out_n = 7'd76;
+    8'd229: out_n = 7'd76;
+    8'd230: out_n = 7'd76;
+    8'd231: out_n = 7'd77;
+    8'd232: out_n = 7'd77;
+    8'd233: out_n = 7'd77;
+    8'd234: out_n = 7'd78;
+    8'd235: out_n = 7'd78;
+    8'd236: out_n = 7'd78;
+    8'd237: out_n = 7'd79;
+    8'd238: out_n = 7'd79;
+    8'd239: out_n = 7'd79;
+    8'd240: out_n = 7'd80;
+    8'd241: out_n = 7'd80;
+    8'd242: out_n = 7'd80;
+    8'd243: out_n = 7'd81;
+    8'd244: out_n = 7'd81;
+    8'd245: out_n = 7'd81;
+    8'd246: out_n = 7'd82;
+    8'd247: out_n = 7'd82;
+    8'd248: out_n = 7'd82;
+    8'd249: out_n = 7'd83;
+    8'd250: out_n = 7'd83;
+    8'd251: out_n = 7'd83;
+    8'd252: out_n = 7'd84;
+    8'd253: out_n = 7'd84;
+    8'd254: out_n = 7'd84;
+    8'd255: out_n = 7'd85;
+  endcase
+
+end
+
+endmodule
+
+
+module Cal_ID_GM(//input signals 
+                  W, V_GS, V_DS, mode_0,
+                //output signals
+                  obj);
+  input [2:0] W, V_GS, V_DS;
+  input mode_0;
+  output reg [7:0] obj; // result of ID or gm (based on mode[0])
+  reg [5:0] tmp1;
+  // reg [7:0] tmp2;
+  wire [2:0] vgs_minus1; // V_GS - 1
+  wire [3:0] temp; // vgs_minus1*2 - V_DS
+  wire flg;
+  
+  assign vgs_minus1 = V_GS - 3'd1;
+  assign temp = vgs_minus1*2 - V_DS;
+  assign flg = (vgs_minus1 > V_DS)? 1'b1:1'b0; //flg == 1: triode, flg == 0: sat
+
+  always @(*) begin
+    if(mode_0 == 1'b0) begin
+      if(flg) begin
+        // calculate g_m
+        tmp1 = V_DS << 1;
+      end
+      else begin
+        // calculate g_m
+        tmp1 = vgs_minus1 << 1;
+      end
+    end
+    else begin
+      if(flg) begin
+        // calculate I_D
+        // tmp1 = V_DS * (vgs_minus1*2 - V_DS);
+        case(V_DS)
+          3'd0: tmp1 = 0;
+          3'd1: begin
+            case(temp)
+              4'd0: tmp1 = 0;
+              4'd1: tmp1 = 1;
+              4'd2: tmp1 = 2;
+              4'd3: tmp1 = 3;
+              4'd4: tmp1 = 4;
+              4'd5: tmp1 = 5;
+              4'd6: tmp1 = 6;
+              4'd7: tmp1 = 7;
+              4'd8: tmp1 = 8;
+              4'd9: tmp1 = 9;
+              4'd10: tmp1 = 10;
+              4'd11: tmp1 = 11;
+              4'd12: tmp1 = 12;
+              // 4'd13: tmp1 = 13;
+              // 4'd14: tmp1 = 14;
+              // 4'd15: tmp1 = 15;
+              default: tmp1 = 1'b1;
+            endcase
+          end
+          3'd2: begin
+            case(temp)
+              4'd0: tmp1 = 0;
+              4'd1: tmp1 = 2;
+              4'd2: tmp1 = 4;
+              4'd3: tmp1 = 6;
+              4'd4: tmp1 = 8;
+              4'd5: tmp1 = 10;
+              4'd6: tmp1 = 12;
+              4'd7: tmp1 = 14;
+              4'd8: tmp1 = 16;
+              4'd9: tmp1 = 18;
+              4'd10: tmp1 = 20;
+              4'd11: tmp1 = 22;
+              4'd12: tmp1 = 24;
+              4'd13: tmp1 = 26;
+              4'd14: tmp1 = 28;
+              4'd15: tmp1 = 30;
+            endcase
+          end
+          3'd3: begin
+            case(temp)
+              4'd0: tmp1 = 0;
+              4'd1: tmp1 = 3;
+              4'd2: tmp1 = 6;
+              4'd3: tmp1 = 9;
+              4'd4: tmp1 = 12;
+              4'd5: tmp1 = 15;
+              4'd6: tmp1 = 18;
+              4'd7: tmp1 = 21;
+              4'd8: tmp1 = 24;
+              4'd9: tmp1 = 27;
+              4'd10: tmp1 = 30;
+              4'd11: tmp1 = 33;
+              4'd12: tmp1 = 36;
+              4'd13: tmp1 = 39;
+              4'd14: tmp1 = 42;
+              4'd15: tmp1 = 45;
+            endcase
+          end
+          3'd4: begin
+            case(temp)
+              4'd0: tmp1 = 0;
+              4'd1: tmp1 = 4;
+              4'd2: tmp1 = 8;
+              4'd3: tmp1 = 12;
+              4'd4: tmp1 = 16;
+              4'd5: tmp1 = 20;
+              4'd6: tmp1 = 24;
+              4'd7: tmp1 = 28;
+              4'd8: tmp1 = 32;
+              4'd9: tmp1 = 36;
+              4'd10: tmp1 = 40;
+              4'd11: tmp1 = 44;
+              4'd12: tmp1 = 48;
+              4'd13: tmp1 = 52;
+              4'd14: tmp1 = 56;
+              4'd15: tmp1 = 60;
+            endcase
+          end
+          3'd5: begin
+            case(temp)
+              4'd0: tmp1 = 0;
+              4'd1: tmp1 = 5;
+              4'd2: tmp1 = 10;
+              4'd3: tmp1 = 15;
+              4'd4: tmp1 = 20;
+              4'd5: tmp1 = 25;
+              4'd6: tmp1 = 30;
+              4'd7: tmp1 = 35;
+              4'd8: tmp1 = 40;
+              4'd9: tmp1 = 45;
+              4'd10: tmp1 = 50;
+              4'd11: tmp1 = 55;
+              4'd12: tmp1 = 60;
+              4'd13: tmp1 = 65;
+              4'd14: tmp1 = 70;
+              // 4'd15: tmp1 = 75;
+              default: tmp1 = 1'b0;
+            endcase
+          end
+          3'd6: begin
+            case(temp)
+              4'd0: tmp1 = 0;
+              4'd1: tmp1 = 6;
+              4'd2: tmp1 = 12;
+              4'd3: tmp1 = 18;
+              4'd4: tmp1 = 24;
+              4'd5: tmp1 = 30;
+              4'd6: tmp1 = 36;
+              4'd7: tmp1 = 42;
+              4'd8: tmp1 = 48;
+              4'd9: tmp1 = 54;
+              4'd10: tmp1 = 60;
+              4'd11: tmp1 = 66;
+              4'd12: tmp1 = 72;
+              4'd13: tmp1 = 78;
+              4'd14: tmp1 = 84;
+              4'd15: tmp1 = 90;
+            endcase
+          end
+          3'd7: begin
+            case(temp)
+              4'd0: tmp1 = 0;
+              4'd1: tmp1 = 7;
+              4'd2: tmp1 = 14;
+              4'd3: tmp1 = 21;
+              4'd4: tmp1 = 28;
+              4'd5: tmp1 = 35;
+              4'd6: tmp1 = 42;
+              4'd7: tmp1 = 49;
+              4'd8: tmp1 = 56;
+              4'd9: tmp1 = 63;
+              4'd10: tmp1 = 70;
+              4'd11: tmp1 = 77;
+              4'd12: tmp1 = 84;
+              4'd13: tmp1 = 91;
+              4'd14: tmp1 = 98;
+              4'd15: tmp1 = 105;
+            endcase
+          end
+        endcase
+      end
+      else begin
+        // calculate I_D
+        // tmp1 = vgs_minus1 * vgs_minus1;
+        case(vgs_minus1)
+          3'd0: tmp1 = 6'd0;
+          3'd1: tmp1 = 6'd1;
+          3'd2: tmp1 = 6'd4;
+          3'd3: tmp1 = 6'd9;
+          3'd4: tmp1 = 6'd16;
+          3'd5: tmp1 = 6'd25;
+          3'd6: tmp1 = 6'd36;
+          default: tmp1 = 1'b0;
+        endcase
+      end
+    end
+
+    obj = tmp1 * W;
+  end
+
+endmodule
+
+

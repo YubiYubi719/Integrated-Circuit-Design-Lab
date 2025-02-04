@@ -1,0 +1,759 @@
+case(tmp1)
+  6'd0: tmp2 = 0;
+  6'd1: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 1;
+      3'd2: tmp2 = 2;
+      3'd3: tmp2 = 3;
+      3'd4: tmp2 = 4;
+      3'd5: tmp2 = 5;
+      3'd6: tmp2 = 6;
+      3'd7: tmp2 = 7;
+    endcase
+  end
+  6'd2: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 2;
+      3'd2: tmp2 = 4;
+      3'd3: tmp2 = 6;
+      3'd4: tmp2 = 8;
+      3'd5: tmp2 = 10;
+      3'd6: tmp2 = 12;
+      3'd7: tmp2 = 14;
+    endcase
+  end
+  6'd3: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 3;
+      3'd2: tmp2 = 6;
+      3'd3: tmp2 = 9;
+      3'd4: tmp2 = 12;
+      3'd5: tmp2 = 15;
+      3'd6: tmp2 = 18;
+      3'd7: tmp2 = 21;
+    endcase
+  end
+  6'd4: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 4;
+      3'd2: tmp2 = 8;
+      3'd3: tmp2 = 12;
+      3'd4: tmp2 = 16;
+      3'd5: tmp2 = 20;
+      3'd6: tmp2 = 24;
+      3'd7: tmp2 = 28;
+    endcase
+  end
+  6'd5: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 5;
+      3'd2: tmp2 = 10;
+      3'd3: tmp2 = 15;
+      3'd4: tmp2 = 20;
+      3'd5: tmp2 = 25;
+      3'd6: tmp2 = 30;
+      3'd7: tmp2 = 35;
+    endcase
+  end
+  6'd6: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 6;
+      3'd2: tmp2 = 12;
+      3'd3: tmp2 = 18;
+      3'd4: tmp2 = 24;
+      3'd5: tmp2 = 30;
+      3'd6: tmp2 = 36;
+      3'd7: tmp2 = 42;
+    endcase
+  end
+  6'd7: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 7;
+      3'd2: tmp2 = 14;
+      3'd3: tmp2 = 21;
+      3'd4: tmp2 = 28;
+      3'd5: tmp2 = 35;
+      3'd6: tmp2 = 42;
+      3'd7: tmp2 = 49;
+    endcase
+  end
+  6'd8: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 8;
+      3'd2: tmp2 = 16;
+      3'd3: tmp2 = 24;
+      3'd4: tmp2 = 32;
+      3'd5: tmp2 = 40;
+      3'd6: tmp2 = 48;
+      3'd7: tmp2 = 56;
+    endcase
+  end
+  6'd9: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 9;
+      3'd2: tmp2 = 18;
+      3'd3: tmp2 = 27;
+      3'd4: tmp2 = 36;
+      3'd5: tmp2 = 45;
+      3'd6: tmp2 = 54;
+      3'd7: tmp2 = 63;
+    endcase
+  end
+  6'd10: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 10;
+      3'd2: tmp2 = 20;
+      3'd3: tmp2 = 30;
+      3'd4: tmp2 = 40;
+      3'd5: tmp2 = 50;
+      3'd6: tmp2 = 60;
+      3'd7: tmp2 = 70;
+    endcase
+  end
+  6'd11: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 11;
+      3'd2: tmp2 = 22;
+      3'd3: tmp2 = 33;
+      3'd4: tmp2 = 44;
+      3'd5: tmp2 = 55;
+      3'd6: tmp2 = 66;
+      3'd7: tmp2 = 77;
+    endcase
+  end
+  6'd12: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 12;
+      3'd2: tmp2 = 24;
+      3'd3: tmp2 = 36;
+      3'd4: tmp2 = 48;
+      3'd5: tmp2 = 60;
+      3'd6: tmp2 = 72;
+      3'd7: tmp2 = 84;
+    endcase
+  end
+  6'd13: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 13;
+      3'd2: tmp2 = 26;
+      3'd3: tmp2 = 39;
+      3'd4: tmp2 = 52;
+      3'd5: tmp2 = 65;
+      3'd6: tmp2 = 78;
+      3'd7: tmp2 = 91;
+    endcase
+  end
+  6'd14: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 14;
+      3'd2: tmp2 = 28;
+      3'd3: tmp2 = 42;
+      3'd4: tmp2 = 56;
+      3'd5: tmp2 = 70;
+      3'd6: tmp2 = 84;
+      3'd7: tmp2 = 98;
+    endcase
+  end
+  6'd15: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 15;
+      3'd2: tmp2 = 30;
+      3'd3: tmp2 = 45;
+      3'd4: tmp2 = 60;
+      3'd5: tmp2 = 75;
+      3'd6: tmp2 = 90;
+      3'd7: tmp2 = 105;
+    endcase
+  end
+  6'd16: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 16;
+      3'd2: tmp2 = 32;
+      3'd3: tmp2 = 48;
+      3'd4: tmp2 = 64;
+      3'd5: tmp2 = 80;
+      3'd6: tmp2 = 96;
+      3'd7: tmp2 = 112;
+    endcase
+  end
+  6'd17: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 17;
+      3'd2: tmp2 = 34;
+      3'd3: tmp2 = 51;
+      3'd4: tmp2 = 68;
+      3'd5: tmp2 = 85;
+      3'd6: tmp2 = 102;
+      3'd7: tmp2 = 119;
+    endcase
+  end
+  6'd18: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 18;
+      3'd2: tmp2 = 36;
+      3'd3: tmp2 = 54;
+      3'd4: tmp2 = 72;
+      3'd5: tmp2 = 90;
+      3'd6: tmp2 = 108;
+      3'd7: tmp2 = 126;
+    endcase
+  end
+  6'd19: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 19;
+      3'd2: tmp2 = 38;
+      3'd3: tmp2 = 57;
+      3'd4: tmp2 = 76;
+      3'd5: tmp2 = 95;
+      3'd6: tmp2 = 114;
+      3'd7: tmp2 = 133;
+    endcase
+  end
+  6'd20: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 20;
+      3'd2: tmp2 = 40;
+      3'd3: tmp2 = 60;
+      3'd4: tmp2 = 80;
+      3'd5: tmp2 = 100;
+      3'd6: tmp2 = 120;
+      3'd7: tmp2 = 140;
+    endcase
+  end
+  6'd21: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 21;
+      3'd2: tmp2 = 42;
+      3'd3: tmp2 = 63;
+      3'd4: tmp2 = 84;
+      3'd5: tmp2 = 105;
+      3'd6: tmp2 = 126;
+      3'd7: tmp2 = 147;
+    endcase
+  end
+  6'd22: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 22;
+      3'd2: tmp2 = 44;
+      3'd3: tmp2 = 66;
+      3'd4: tmp2 = 88;
+      3'd5: tmp2 = 110;
+      3'd6: tmp2 = 132;
+      3'd7: tmp2 = 154;
+    endcase
+  end
+  6'd23: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 23;
+      3'd2: tmp2 = 46;
+      3'd3: tmp2 = 69;
+      3'd4: tmp2 = 92;
+      3'd5: tmp2 = 115;
+      3'd6: tmp2 = 138;
+      3'd7: tmp2 = 161;
+    endcase
+  end
+  6'd24: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 24;
+      3'd2: tmp2 = 48;
+      3'd3: tmp2 = 72;
+      3'd4: tmp2 = 96;
+      3'd5: tmp2 = 120;
+      3'd6: tmp2 = 144;
+      3'd7: tmp2 = 168;
+    endcase
+  end
+  6'd25: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 25;
+      3'd2: tmp2 = 50;
+      3'd3: tmp2 = 75;
+      3'd4: tmp2 = 100;
+      3'd5: tmp2 = 125;
+      3'd6: tmp2 = 150;
+      3'd7: tmp2 = 175;
+    endcase
+  end
+  6'd26: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 26;
+      3'd2: tmp2 = 52;
+      3'd3: tmp2 = 78;
+      3'd4: tmp2 = 104;
+      3'd5: tmp2 = 130;
+      3'd6: tmp2 = 156;
+      3'd7: tmp2 = 182;
+    endcase
+  end
+  6'd27: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 27;
+      3'd2: tmp2 = 54;
+      3'd3: tmp2 = 81;
+      3'd4: tmp2 = 108;
+      3'd5: tmp2 = 135;
+      3'd6: tmp2 = 162;
+      3'd7: tmp2 = 189;
+    endcase
+  end
+  6'd28: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 28;
+      3'd2: tmp2 = 56;
+      3'd3: tmp2 = 84;
+      3'd4: tmp2 = 112;
+      3'd5: tmp2 = 140;
+      3'd6: tmp2 = 168;
+      3'd7: tmp2 = 196;
+    endcase
+  end
+  6'd29: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 29;
+      3'd2: tmp2 = 58;
+      3'd3: tmp2 = 87;
+      3'd4: tmp2 = 116;
+      3'd5: tmp2 = 145;
+      3'd6: tmp2 = 174;
+      3'd7: tmp2 = 203;
+    endcase
+  end
+  6'd30: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 30;
+      3'd2: tmp2 = 60;
+      3'd3: tmp2 = 90;
+      3'd4: tmp2 = 120;
+      3'd5: tmp2 = 150;
+      3'd6: tmp2 = 180;
+      3'd7: tmp2 = 210;
+    endcase
+  end
+  6'd31: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 31;
+      3'd2: tmp2 = 62;
+      3'd3: tmp2 = 93;
+      3'd4: tmp2 = 124;
+      3'd5: tmp2 = 155;
+      3'd6: tmp2 = 186;
+      3'd7: tmp2 = 217;
+    endcase
+  end
+  6'd32: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 32;
+      3'd2: tmp2 = 64;
+      3'd3: tmp2 = 96;
+      3'd4: tmp2 = 128;
+      3'd5: tmp2 = 160;
+      3'd6: tmp2 = 192;
+      3'd7: tmp2 = 224;
+    endcase
+  end
+  6'd33: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 33;
+      3'd2: tmp2 = 66;
+      3'd3: tmp2 = 99;
+      3'd4: tmp2 = 132;
+      3'd5: tmp2 = 165;
+      3'd6: tmp2 = 198;
+      3'd7: tmp2 = 231;
+    endcase
+  end
+  6'd34: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 34;
+      3'd2: tmp2 = 68;
+      3'd3: tmp2 = 102;
+      3'd4: tmp2 = 136;
+      3'd5: tmp2 = 170;
+      3'd6: tmp2 = 204;
+      3'd7: tmp2 = 238;
+    endcase
+  end
+  6'd35: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 35;
+      3'd2: tmp2 = 70;
+      3'd3: tmp2 = 105;
+      3'd4: tmp2 = 140;
+      3'd5: tmp2 = 175;
+      3'd6: tmp2 = 210;
+      3'd7: tmp2 = 245;
+    endcase
+  end
+  6'd36: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 36;
+      3'd2: tmp2 = 72;
+      3'd3: tmp2 = 108;
+      3'd4: tmp2 = 144;
+      3'd5: tmp2 = 180;
+      3'd6: tmp2 = 216;
+      3'd7: tmp2 = 252;
+    endcase
+  end
+  6'd37: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 37;
+      3'd2: tmp2 = 74;
+      3'd3: tmp2 = 111;
+      3'd4: tmp2 = 148;
+      3'd5: tmp2 = 185;
+      3'd6: tmp2 = 222;
+      3'd7: tmp2 = 259;
+    endcase
+  end
+  6'd38: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 38;
+      3'd2: tmp2 = 76;
+      3'd3: tmp2 = 114;
+      3'd4: tmp2 = 152;
+      3'd5: tmp2 = 190;
+      3'd6: tmp2 = 228;
+      3'd7: tmp2 = 266;
+    endcase
+  end
+  6'd39: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 39;
+      3'd2: tmp2 = 78;
+      3'd3: tmp2 = 117;
+      3'd4: tmp2 = 156;
+      3'd5: tmp2 = 195;
+      3'd6: tmp2 = 234;
+      3'd7: tmp2 = 273;
+    endcase
+  end
+  6'd40: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 40;
+      3'd2: tmp2 = 80;
+      3'd3: tmp2 = 120;
+      3'd4: tmp2 = 160;
+      3'd5: tmp2 = 200;
+      3'd6: tmp2 = 240;
+      3'd7: tmp2 = 280;
+    endcase
+  end
+  6'd41: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 41;
+      3'd2: tmp2 = 82;
+      3'd3: tmp2 = 123;
+      3'd4: tmp2 = 164;
+      3'd5: tmp2 = 205;
+      3'd6: tmp2 = 246;
+      3'd7: tmp2 = 287;
+    endcase
+  end
+  6'd42: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 42;
+      3'd2: tmp2 = 84;
+      3'd3: tmp2 = 126;
+      3'd4: tmp2 = 168;
+      3'd5: tmp2 = 210;
+      3'd6: tmp2 = 252;
+      3'd7: tmp2 = 294;
+    endcase
+  end
+  6'd43: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 43;
+      3'd2: tmp2 = 86;
+      3'd3: tmp2 = 129;
+      3'd4: tmp2 = 172;
+      3'd5: tmp2 = 215;
+      3'd6: tmp2 = 258;
+      3'd7: tmp2 = 301;
+    endcase
+  end
+  6'd44: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 44;
+      3'd2: tmp2 = 88;
+      3'd3: tmp2 = 132;
+      3'd4: tmp2 = 176;
+      3'd5: tmp2 = 220;
+      3'd6: tmp2 = 264;
+      3'd7: tmp2 = 308;
+    endcase
+  end
+  6'd45: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 45;
+      3'd2: tmp2 = 90;
+      3'd3: tmp2 = 135;
+      3'd4: tmp2 = 180;
+      3'd5: tmp2 = 225;
+      3'd6: tmp2 = 270;
+      3'd7: tmp2 = 315;
+    endcase
+  end
+  6'd46: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 46;
+      3'd2: tmp2 = 92;
+      3'd3: tmp2 = 138;
+      3'd4: tmp2 = 184;
+      3'd5: tmp2 = 230;
+      3'd6: tmp2 = 276;
+      3'd7: tmp2 = 322;
+    endcase
+  end
+  6'd47: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 47;
+      3'd2: tmp2 = 94;
+      3'd3: tmp2 = 141;
+      3'd4: tmp2 = 188;
+      3'd5: tmp2 = 235;
+      3'd6: tmp2 = 282;
+      3'd7: tmp2 = 329;
+    endcase
+  end
+  6'd48: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 48;
+      3'd2: tmp2 = 96;
+      3'd3: tmp2 = 144;
+      3'd4: tmp2 = 192;
+      3'd5: tmp2 = 240;
+      3'd6: tmp2 = 288;
+      3'd7: tmp2 = 336;
+    endcase
+  end
+  6'd49: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 49;
+      3'd2: tmp2 = 98;
+      3'd3: tmp2 = 147;
+      3'd4: tmp2 = 196;
+      3'd5: tmp2 = 245;
+      3'd6: tmp2 = 294;
+      3'd7: tmp2 = 343;
+    endcase
+  end
+  6'd50: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 50;
+      3'd2: tmp2 = 100;
+      3'd3: tmp2 = 150;
+      3'd4: tmp2 = 200;
+      3'd5: tmp2 = 250;
+      3'd6: tmp2 = 300;
+      3'd7: tmp2 = 350;
+    endcase
+  end
+  6'd51: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 51;
+      3'd2: tmp2 = 102;
+      3'd3: tmp2 = 153;
+      3'd4: tmp2 = 204;
+      3'd5: tmp2 = 255;
+      3'd6: tmp2 = 306;
+      3'd7: tmp2 = 357;
+    endcase
+  end
+  6'd52: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 52;
+      3'd2: tmp2 = 104;
+      3'd3: tmp2 = 156;
+      3'd4: tmp2 = 208;
+      3'd5: tmp2 = 260;
+      3'd6: tmp2 = 312;
+      3'd7: tmp2 = 364;
+    endcase
+  end
+  6'd53: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 53;
+      3'd2: tmp2 = 106;
+      3'd3: tmp2 = 159;
+      3'd4: tmp2 = 212;
+      3'd5: tmp2 = 265;
+      3'd6: tmp2 = 318;
+      3'd7: tmp2 = 371;
+    endcase
+  end
+  6'd54: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 54;
+      3'd2: tmp2 = 108;
+      3'd3: tmp2 = 162;
+      3'd4: tmp2 = 216;
+      3'd5: tmp2 = 270;
+      3'd6: tmp2 = 324;
+      3'd7: tmp2 = 378;
+    endcase
+  end
+  6'd55: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 55;
+      3'd2: tmp2 = 110;
+      3'd3: tmp2 = 165;
+      3'd4: tmp2 = 220;
+      3'd5: tmp2 = 275;
+      3'd6: tmp2 = 330;
+      3'd7: tmp2 = 385;
+    endcase
+  end
+  6'd56: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 56;
+      3'd2: tmp2 = 112;
+      3'd3: tmp2 = 168;
+      3'd4: tmp2 = 224;
+      3'd5: tmp2 = 280;
+      3'd6: tmp2 = 336;
+      3'd7: tmp2 = 392;
+    endcase
+  end
+  6'd57: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 57;
+      3'd2: tmp2 = 114;
+      3'd3: tmp2 = 171;
+      3'd4: tmp2 = 228;
+      3'd5: tmp2 = 285;
+      3'd6: tmp2 = 342;
+      3'd7: tmp2 = 399;
+    endcase
+  end
+  6'd58: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 58;
+      3'd2: tmp2 = 116;
+      3'd3: tmp2 = 174;
+      3'd4: tmp2 = 232;
+      3'd5: tmp2 = 290;
+      3'd6: tmp2 = 348;
+      3'd7: tmp2 = 406;
+    endcase
+  end
+  6'd59: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 59;
+      3'd2: tmp2 = 118;
+      3'd3: tmp2 = 177;
+      3'd4: tmp2 = 236;
+      3'd5: tmp2 = 295;
+      3'd6: tmp2 = 354;
+      3'd7: tmp2 = 413;
+    endcase
+  end
+  6'd60: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 60;
+      3'd2: tmp2 = 120;
+      3'd3: tmp2 = 180;
+      3'd4: tmp2 = 240;
+      3'd5: tmp2 = 300;
+      3'd6: tmp2 = 360;
+      3'd7: tmp2 = 420;
+    endcase
+  end
+  6'd61: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 61;
+      3'd2: tmp2 = 122;
+      3'd3: tmp2 = 183;
+      3'd4: tmp2 = 244;
+      3'd5: tmp2 = 305;
+      3'd6: tmp2 = 366;
+      3'd7: tmp2 = 427;
+    endcase
+  end
+  6'd62: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 62;
+      3'd2: tmp2 = 124;
+      3'd3: tmp2 = 186;
+      3'd4: tmp2 = 248;
+      3'd5: tmp2 = 310;
+      3'd6: tmp2 = 372;
+      3'd7: tmp2 = 434;
+    endcase
+  end
+  6'd63: begin
+    case(W)
+      3'd0: tmp2 = 0;
+      3'd1: tmp2 = 63;
+      3'd2: tmp2 = 126;
+      3'd3: tmp2 = 189;
+      3'd4: tmp2 = 252;
+      3'd5: tmp2 = 315;
+      3'd6: tmp2 = 378;
+      3'd7: tmp2 = 441;
+    endcase
+  end
+endcase

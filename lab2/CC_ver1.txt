@@ -1,0 +1,299 @@
+module CC(
+    //Input Port
+    clk,
+    rst_n,
+	in_valid,
+	mode,
+    xi,
+    yi,
+
+    //Output Port
+    out_valid,
+	xo,
+	yo
+    );
+
+input               clk, rst_n, in_valid;
+input       [1:0]   mode;
+input       [7:0]   xi, yi;  
+
+output reg          out_valid;
+output reg signed [7:0]   xo, yo;
+//==============================================//
+//             Parameter and Integer            //
+//==============================================//
+
+// parameters for Trapezoid rendering
+parameter MODE0_IDLE = 1'b0, MODE0_OUTPUT = 1'b1;
+reg mode0_cs, mode0_ns;
+reg signed [7:0] x [0:3];
+reg signed [7:0] y [0:3];
+reg [1:0] mode_reg;
+reg [2:0] input_idx;
+reg [2:0] rst_cnt_mode1;
+reg [2:0] rst_cnt_mode2;
+
+reg isNeg;
+reg signed [7:0] node1_x, node1_y;
+reg signed [7:0] node2_x, node2_y;
+reg signed [8:0]  a, b; // ax + by = c
+reg signed [15:0] c;
+reg signed [7:0]  bound_next;
+reg signed [15:0] _numerator;
+reg signed [7:0]  cur_x;
+reg signed [7:0]  r_bound_cur;
+reg signed [7:0]  l_bound_next, r_bound_next;
+
+reg signed [15:0] tmp_left, tmp_right;
+reg signed [7:0]  xo_mode1, yo_mode1;
+reg signed [7:0]  cur_x_left, cur_x_right;
+reg signed [16:0] area;
+reg [15:0] tmp_area;
+reg [14:0] pos_area;
+
+//======================================================SELECT OUTPUT======================================================
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        // initialize output signals
+        xo <= 0;
+        yo <= 0;
+    end
+    else begin
+        case(mode_reg)
+        2'd0:begin
+            if(mode0_cs == MODE0_OUTPUT)begin
+                xo <= xo + 1;
+                if(xo == r_bound_cur) begin
+                    xo <= l_bound_next;
+                    r_bound_cur <= r_bound_next;
+                    yo <= yo + 1;
+                end
+            end
+            else begin
+                xo <= x[2];
+                yo <= y[2];
+                r_bound_cur <= x[3];
+            end
+        end
+        2'd1:begin
+            xo <= xo_mode1;
+            yo <= yo_mode1;
+        end
+        2'd2:begin
+            xo <= pos_area[14:8];
+            yo <= pos_area[7:0];
+        end
+        endcase
+    end
+end
+
+//read input (4 clock)
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        input_idx <= 2'd0;
+    end
+    else if(in_valid) begin
+        input_idx <= input_idx + 1'b1;
+    end
+    else if(!out_valid) input_idx <= 2'd0;
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        x[0] <= 0;
+        y[0] <= 0;
+        x[1] <= 0;
+        y[1] <= 0;
+        x[2] <= 0;
+        y[2] <= 0;
+        x[3] <= 0;
+        y[3] <= 0;
+        mode_reg <= 2'd3;
+    end
+    else if(in_valid) begin
+        x[input_idx] <= xi;
+        y[input_idx] <= yi;
+        mode_reg <= mode;
+        // $display("x[%d] = %d  y[%d] = %d",input_idx, x[input_idx], input_idx, y[input_idx]);
+    end
+end
+
+//======================================================CONTROL_OUT_VALID======================================================
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) out_valid <= 0;
+    else if(mode_reg == 0 && xo == x[1] && yo == y[1]) out_valid <= 1'b0;
+    else if(mode_reg == 0 && input_idx == 4)           out_valid <= 1'b1;
+    else if(mode_reg == 1 && rst_cnt_mode1 >= 1'd1)    out_valid <= 1'b0;
+    else if(mode_reg == 1 && !in_valid)                out_valid <= 1'b1;
+    else if(mode_reg == 2 && rst_cnt_mode2 >= 1'd1)    out_valid <= 1'b0;
+    else if(mode_reg == 2 && !in_valid)                out_valid <= 1'b1;
+end
+//======================================================MODE_0======================================================
+// 判斷斜率正負及計算方程式
+always @(*) begin
+// 選擇左邊方程式的點or右邊方程式的點
+    if(xo == r_bound_cur) begin
+        node1_x = x[1];
+        node1_y = y[1];
+        node2_x = x[3];
+        node2_y = y[3];
+    end
+    else begin
+        node1_x = x[0];
+        node1_y = y[0];
+        node2_x = x[2];
+        node2_y = y[2];
+    end
+end
+
+always @(*) begin
+// 計算方程式之常數c
+    a = node2_y - node1_y;  
+    b = node1_x - node2_x;
+    c = node2_y*node1_x - node1_y*node2_x;
+end
+
+// 計算邊界
+always @(*) begin
+    _numerator = c - b*(yo+1); // 分子
+    cur_x  = _numerator / a;
+    isNeg  = _numerator[15] ^ a[8];
+
+    if(a*cur_x == _numerator) begin
+        bound_next = cur_x;
+    end
+    else begin
+        if(isNeg) begin
+            bound_next = cur_x - 1;
+        end
+        else begin
+            bound_next = cur_x;
+        end
+    end
+end
+
+always @(posedge clk) begin
+    if(xo != r_bound_cur) begin
+        l_bound_next <= bound_next;
+    end
+end
+
+// continuously update r_bound_next when xo == r_bound_cur
+always @(*) begin
+    if(xo == r_bound_cur) r_bound_next = bound_next;
+    else r_bound_next = 0;
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        mode0_cs <= MODE0_IDLE;
+    end
+    else begin
+        mode0_cs <= mode0_ns;
+    end
+end
+
+always @(*) begin
+    if(!rst_n) begin
+        mode0_ns = MODE0_IDLE;
+    end
+    else begin
+        case(mode0_cs)
+            MODE0_IDLE: begin
+                if(mode_reg == 0 && input_idx >= 4) begin
+                    mode0_ns = MODE0_OUTPUT;
+                end
+                else begin
+                    mode0_ns = MODE0_IDLE;
+                end
+            end
+            MODE0_OUTPUT: begin
+                if(xo == x[1] && yo == y[1]) begin
+                    mode0_ns = MODE0_IDLE;
+                end
+                else begin
+                    mode0_ns = MODE0_OUTPUT;
+                end
+            end
+            default: mode0_ns = MODE0_IDLE;
+        endcase
+    end
+end
+
+//======================================================CAL_SOME_DATA======================================================
+wire signed [8:0] y1_minus_y0;
+wire signed [8:0] x0_minus_x1;
+wire signed [8:0] x2_minus_x3;
+wire signed [8:0] y2_minus_y3;
+
+reg signed [12:0] tmp_DPL;// d(P,L)之分子
+reg signed [24:0] tmp_DPL_square; // d(P,L)之分子平方
+reg signed [24:0] tmp_R_square; //半徑平方 * d(P,L)之分母平方
+
+assign y1_minus_y0 = y[1] - y[0];
+assign x0_minus_x1 = x[0] - x[1];
+assign x2_minus_x3 = x[2] - x[3];
+assign y2_minus_y3 = y[2] - y[3];
+
+always @(*) begin
+    tmp_DPL = y1_minus_y0*x[2] + x0_minus_x1*y[2] + y[0]*x[1] - x[0]*y[1];
+    tmp_DPL_square = tmp_DPL*tmp_DPL;
+    tmp_R_square = (y1_minus_y0*y1_minus_y0 + x0_minus_x1*x0_minus_x1) * (x2_minus_x3*x2_minus_x3 + y2_minus_y3*y2_minus_y3);
+end
+//======================================================MODE_1======================================================
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) rst_cnt_mode1 <= 0;
+    else if(mode_reg == 1 && !in_valid) rst_cnt_mode1 <= rst_cnt_mode1 + 1'b1;
+    else rst_cnt_mode1 <= 0;
+end
+
+// always @(*) begin
+//     if(tmp_DPL_square > tmp_R_square) begin
+//         xo_mode1 = 8'h00;
+//         yo_mode1 = 8'h00;
+//     end
+//     else if(tmp_DPL_square < tmp_R_square) begin
+//         xo_mode1 = 8'h00;
+//         yo_mode1 = 8'h01;
+//     end
+//     else begin
+//         xo_mode1 = 8'h00;
+//         yo_mode1 = 8'h02;
+//     end
+// end
+
+always @(*) begin
+    if(tmp_DPL_square >= tmp_R_square) begin
+        if(tmp_DPL_square == tmp_R_square) begin
+            xo_mode1 = 8'h00;
+            yo_mode1 = 8'h02;
+        end
+        else begin
+            xo_mode1 = 8'h00;
+            yo_mode1 = 8'h00;
+        end
+    end
+    else begin
+        xo_mode1 = 8'h00;
+        yo_mode1 = 8'h01;
+    end
+end
+
+//======================================================MODE_2======================================================
+
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) rst_cnt_mode2 <= 0;
+    else if(mode_reg == 2 && !in_valid) rst_cnt_mode2 <= rst_cnt_mode2 + 1'b1;
+    else rst_cnt_mode2 <= 0;
+end
+
+always @(*) begin
+    area = (x[0]*y[1] - x[1]*y[0]) + (x[1]*y[2] - x[2]*y[1]) + (x[2]*y[3] - x[3]*y[2]) + (x[3]*y[0] - x[0]*y[3]);
+    tmp_area = (area[16] == 0)? area:-area;
+    pos_area = tmp_area >> 1;
+    // xo_mode2 = pos_area[14:8];
+    // yo_mode2 = pos_area[7:0];
+end
+
+endmodule 

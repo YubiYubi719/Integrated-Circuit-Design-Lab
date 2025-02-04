@@ -1,0 +1,543 @@
+//############################################################################
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//    (C) Copyright System Integration and Silicon Implementation Laboratory
+//    All Right Reserved
+//		Date		: 2023/10
+//		Version		: v1.0
+//   	File Name   : HT_TOP.v
+//   	Module Name : HT_TOP
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//############################################################################
+
+// synopsys translate_off
+`include "SORT_IP.v"
+// synopsys translate_on
+
+module HT_TOP(
+    // Input signals
+    clk,
+	rst_n,
+	in_valid,
+    in_weight, 
+	out_mode,
+    // Output signals
+    out_valid, 
+	out_code
+);
+
+// ===============================================================
+// Input & Output Declaration
+// ===============================================================
+input clk, rst_n, in_valid, out_mode;
+input [2:0] in_weight;
+
+output reg out_valid, out_code;
+
+// ===============================================================
+// Reg & Wire Declaration
+// ===============================================================
+parameter IDLE = 4'd0,
+          READ_INPUT = 4'd1,
+          PLANT_TREE = 4'd2,
+          OUTPUT_A = 4'd3,
+          OUTPUT_B = 4'd4,
+          OUTPUT_C = 4'd5,
+          OUTPUT_E = 4'd6,
+          OUTPUT_I = 4'd7,
+          OUTPUT_L = 4'd8,
+          OUTPUT_O = 4'd9,
+          OUTPUT_V = 4'd10;
+reg       mode_reg;
+reg [3:0] curState, nextState;
+reg [4:0] weights [1:15];
+reg [31:0] in_char_comb; // character that need to sort
+reg [39:0] in_wei_comb; // weight that need to sort
+reg [31:0] out_char; // sort output
+reg [31:0] sort_result;
+reg [2:0] codeLength  [14:7];
+reg [6:0] huffmanCode [14:7];
+reg childMap [6:1][14:7];
+
+reg [2:0] input_cnt;
+reg [2:0]  tree_cnt;
+reg [2:0] output_cnt;
+
+
+// ===============================================================
+// Design
+// ===============================================================
+SORT_IP #(8) sort (.IN_character(in_char_comb), .IN_weight(in_wei_comb), .OUT_character(out_char));
+
+integer i, j;
+
+// out_valid
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) out_valid <= 0;
+    else if(curState == IDLE) out_valid <= 0;
+    else if(curState == OUTPUT_I) begin
+        out_valid <= 1;
+    end
+end
+
+// output_cnt
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) output_cnt <= 0;
+    else if(curState == IDLE) output_cnt <= 0;
+    else if(curState == OUTPUT_A) begin
+        if(output_cnt == codeLength[14] - 1) output_cnt <= 0;
+        else output_cnt <= output_cnt + 1;
+    end
+    else if(curState == OUTPUT_B) begin
+        if(output_cnt == codeLength[13] - 1) output_cnt <= 0;
+        else output_cnt <= output_cnt + 1;
+    end
+    else if(curState == OUTPUT_C) begin
+        if(output_cnt == codeLength[12] - 1) output_cnt <= 0;
+        else output_cnt <= output_cnt + 1;
+    end
+    else if(curState == OUTPUT_E) begin
+        if(output_cnt == codeLength[11] - 1) output_cnt <= 0;
+        else output_cnt <= output_cnt + 1;
+    end
+    else if(curState == OUTPUT_I) begin
+        if(output_cnt == codeLength[10] - 1) output_cnt <= 0;
+        else output_cnt <= output_cnt + 1;
+    end
+    else if(curState == OUTPUT_L) begin
+        if(output_cnt == codeLength[9] - 1) output_cnt <= 0;
+        else output_cnt <= output_cnt + 1;
+    end
+    else if(curState == OUTPUT_O) begin
+        if(output_cnt == codeLength[8] - 1) output_cnt <= 0;
+        else output_cnt <= output_cnt + 1;
+    end
+    else if(curState == OUTPUT_V) begin
+        if(output_cnt == codeLength[7] - 1) output_cnt <= 0;
+        else output_cnt <= output_cnt + 1;
+    end
+end
+
+// out_code
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) out_code <= 0;
+    else if(curState == OUTPUT_A) begin
+        out_code <= huffmanCode[14][output_cnt];
+    end
+    else if(curState == OUTPUT_B) begin
+        out_code <= huffmanCode[13][output_cnt];
+    end
+    else if(curState == OUTPUT_C) begin
+        out_code <= huffmanCode[12][output_cnt];
+    end
+    else if(curState == OUTPUT_E) begin
+        out_code <= huffmanCode[11][output_cnt];
+    end
+    else if(curState == OUTPUT_I) begin
+        out_code <= huffmanCode[10][output_cnt];
+    end
+    else if(curState == OUTPUT_L) begin
+        out_code <= huffmanCode[9][output_cnt];
+    end
+    else if(curState == OUTPUT_O) begin
+        out_code <= huffmanCode[8][output_cnt];
+    end
+    else if(curState == OUTPUT_V) begin
+        out_code <= huffmanCode[7][output_cnt];
+    end
+    else out_code <= 0;
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) curState <= IDLE;
+    else curState <= nextState;
+end
+
+always @(*) begin
+    if(!rst_n) nextState = IDLE;
+    else begin
+        case(curState)
+            IDLE: begin
+                if(in_valid) nextState = READ_INPUT;
+                else nextState = curState;
+            end
+            READ_INPUT: begin
+                if(input_cnt == 7) nextState = PLANT_TREE;
+                else nextState = curState;
+            end
+            PLANT_TREE: begin
+                if(tree_cnt == 0) nextState = OUTPUT_I;
+                else nextState = curState;
+            end
+            OUTPUT_A: begin
+                if(output_cnt == codeLength[14] - 1) nextState = OUTPUT_B;
+                else nextState = curState;
+            end
+            OUTPUT_B: begin
+                if(output_cnt == codeLength[13] - 1) nextState = IDLE;
+                else nextState = curState;
+            end
+            OUTPUT_C: begin
+                if(output_cnt == codeLength[12] - 1) nextState = OUTPUT_L;
+                else nextState = curState;
+            end
+            OUTPUT_E: begin
+                if(output_cnt == codeLength[11] - 1) nextState = IDLE;
+                else nextState = curState;
+            end
+            OUTPUT_I: begin
+                if(mode_reg == 0 && output_cnt == codeLength[10] - 1) nextState = OUTPUT_L;
+                else if(mode_reg == 1 && output_cnt == codeLength[10] - 1) nextState = OUTPUT_C;
+                else nextState = curState;
+            end
+            OUTPUT_L: begin
+                if(mode_reg == 0 && output_cnt == codeLength[9] - 1) nextState = OUTPUT_O;
+                else if(mode_reg == 1 && output_cnt == codeLength[9] - 1) nextState = OUTPUT_A;
+                else nextState = curState;
+            end
+            OUTPUT_O: begin
+                if(output_cnt == codeLength[8] - 1) nextState = OUTPUT_V;
+                else nextState = curState;
+            end
+            OUTPUT_V: begin
+                if(output_cnt == codeLength[7] - 1) nextState = OUTPUT_E;
+                else nextState = curState;
+            end
+            default: nextState = IDLE;
+        endcase
+    end
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) input_cnt <= 0;
+    else if(nextState == READ_INPUT || curState == READ_INPUT) input_cnt <= input_cnt + 1;
+    else input_cnt <= 0;
+end
+
+// weights
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        for(i = 0; i <= 14; i = i+1) begin
+            weights[i] <= 0;
+        end
+        weights[15] <= 5'd31;
+    end
+    else if(curState == IDLE && nextState == IDLE) begin
+        for(i = 0; i <= 14; i = i+1) begin
+            weights[i] <= 0;
+        end
+        weights[15] <= 5'd31;
+    end
+    else if(nextState == READ_INPUT || curState == READ_INPUT) begin
+        weights[14-input_cnt] <= in_weight;
+    end
+    else if(curState == PLANT_TREE) begin
+        weights[tree_cnt] <= weights[out_char[7:4]] + weights[out_char[3:0]];
+    end
+end
+// mode_reg
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) mode_reg <= 0;
+    else if(nextState == READ_INPUT && input_cnt == 0) mode_reg <= out_mode;
+end
+// tree_cnt
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) tree_cnt <= 6;
+    else if(curState == IDLE) tree_cnt <= 6;
+    else if(curState == PLANT_TREE) tree_cnt <= tree_cnt - 1;
+end
+// sort_result
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) sort_result <= 0;
+    else begin
+        if(curState == PLANT_TREE) begin
+            sort_result <= out_char;
+        end
+    end
+end
+// in_char_comb
+always @(*) begin
+    in_char_comb = 0;
+    if(curState == PLANT_TREE) begin
+        if(tree_cnt == 6) in_char_comb = {4'd14, 4'd13, 4'd12, 4'd11, 4'd10, 4'd9, 4'd8, 4'd7};
+        else if(tree_cnt == 5) in_char_comb = {4'd15, sort_result[31:8], 4'd6};
+        else if(tree_cnt == 4) in_char_comb = {4'd15, sort_result[31:8], 4'd5};
+        else if(tree_cnt == 3) in_char_comb = {4'd15, sort_result[31:8], 4'd4};
+        else if(tree_cnt == 2) in_char_comb = {4'd15, sort_result[31:8], 4'd3};
+        else if(tree_cnt == 1) in_char_comb = {4'd15, sort_result[31:8], 4'd2};
+        else if(tree_cnt == 0) in_char_comb = {4'd15, sort_result[31:8], 4'd1};
+    end
+end
+// in_wei_comb
+always @(*) begin
+    in_wei_comb = 0;
+    if(curState == PLANT_TREE) begin
+        if(tree_cnt == 6) in_wei_comb = {weights[14], weights[13], weights[12], weights[11], weights[10], weights[9], weights[8], weights[7]};
+        else in_wei_comb = {weights[in_char_comb[31:28]], weights[in_char_comb[27:24]], weights[in_char_comb[23:20]], weights[in_char_comb[19:16]],
+                            weights[in_char_comb[15:12]], weights[in_char_comb[11:8]],  weights[in_char_comb[7:4]],   weights[in_char_comb[3:0]]};
+    end
+end
+
+// childMap
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        for(i = 1; i <= 6; i = i+1) begin
+            for(j = 7; j <= 14; j = j+1) begin
+                childMap[i][j] <= 0;
+            end
+        end
+    end
+    else if(curState == IDLE) begin
+        for(i = 1; i <= 6; i = i+1) begin
+            for(j = 7; j <= 14; j = j+1) begin
+                childMap[i][j] <= 0;
+            end
+        end
+    end
+    else if(curState == PLANT_TREE && tree_cnt >= 1) begin
+        // both side is leaf
+        if(out_char[7:4] >= 7 && out_char[3:0] >= 7) begin
+            childMap[tree_cnt][out_char[7:4]] <= 1;
+            childMap[tree_cnt][out_char[3:0]] <= 1;
+        end
+        // left side is leaf, right side is subtree
+        else if(out_char[7:4] >= 7 && out_char[3:0] < 7) begin
+            if(out_char[7:4] == 7) childMap[tree_cnt][7] <= 1;
+            else if(childMap[out_char[3:0]][7] == 1) childMap[tree_cnt][7] <= 1;
+
+            if(out_char[7:4] == 8) childMap[tree_cnt][8] <= 1;
+            else if(childMap[out_char[3:0]][8] == 1) childMap[tree_cnt][8] <= 1;
+
+            if(out_char[7:4] == 9) childMap[tree_cnt][9] <= 1;
+            else if(childMap[out_char[3:0]][9] == 1) childMap[tree_cnt][9] <= 1;
+
+            if(out_char[7:4] == 10) childMap[tree_cnt][10] <= 1;
+            else if(childMap[out_char[3:0]][10] == 1) childMap[tree_cnt][10] <= 1;
+
+            if(out_char[7:4] == 11) childMap[tree_cnt][11] <= 1;
+            else if(childMap[out_char[3:0]][11] == 1) childMap[tree_cnt][11] <= 1;
+
+            if(out_char[7:4] == 12) childMap[tree_cnt][12] <= 1;
+            else if(childMap[out_char[3:0]][12] == 1) childMap[tree_cnt][12] <= 1;
+
+            if(out_char[7:4] == 13) childMap[tree_cnt][13] <= 1;
+            else if(childMap[out_char[3:0]][13] == 1) childMap[tree_cnt][13] <= 1;
+
+            if(out_char[7:4] == 14) childMap[tree_cnt][14] <= 1;
+            else if(childMap[out_char[3:0]][14] == 1) childMap[tree_cnt][14] <= 1;
+        end
+        // left side is subtree, right side is leaf
+        else if(out_char[7:4] < 7 && out_char[3:0] >= 7) begin
+            if(out_char[3:0] == 7) childMap[tree_cnt][7] <= 1;
+            else if(childMap[out_char[7:4]][7] == 1) childMap[tree_cnt][7] <= 1;
+
+            if(out_char[3:0] == 8) childMap[tree_cnt][8] <= 1;
+            else if(childMap[out_char[7:4]][8] == 1) childMap[tree_cnt][8] <= 1;
+
+            if(out_char[3:0] == 9) childMap[tree_cnt][9] <= 1;
+            else if(childMap[out_char[7:4]][9] == 1) childMap[tree_cnt][9] <= 1;
+
+            if(out_char[3:0] == 10) childMap[tree_cnt][10] <= 1;
+            else if(childMap[out_char[7:4]][10] == 1) childMap[tree_cnt][10] <= 1;
+
+            if(out_char[3:0] == 11) childMap[tree_cnt][11] <= 1;
+            else if(childMap[out_char[7:4]][11] == 1) childMap[tree_cnt][11] <= 1;
+
+            if(out_char[3:0] == 12) childMap[tree_cnt][12] <= 1;
+            else if(childMap[out_char[7:4]][12] == 1) childMap[tree_cnt][12] <= 1;
+
+            if(out_char[3:0] == 13) childMap[tree_cnt][13] <= 1;
+            else if(childMap[out_char[7:4]][13] == 1) childMap[tree_cnt][13] <= 1;
+
+            if(out_char[3:0] == 14) childMap[tree_cnt][14] <= 1;
+            else if(childMap[out_char[7:4]][14] == 1) childMap[tree_cnt][14] <= 1;
+        end
+        // both side is subtree
+        else begin
+            for(i = 7; i <= 14; i = i+1) begin
+                childMap[tree_cnt][i] <= childMap[out_char[7:4]][i] | childMap[out_char[3:0]][i];
+            end
+        end
+    end
+
+end
+
+// codeLength
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        for(i = 7; i <= 14; i = i+1) begin
+            codeLength[i] <= 0;
+        end
+    end
+    else if(curState == IDLE) begin
+        for(i = 7; i <= 14; i = i+1) begin
+            codeLength[i] <= 0;
+        end
+    end
+    else if(curState == PLANT_TREE) begin
+        // both side is leaf
+        if(out_char[7:4] >= 7 && out_char[3:0] >= 7) begin
+            codeLength[out_char[7:4]] <= codeLength[out_char[7:4]] + 1;
+            codeLength[out_char[3:0]] <= codeLength[out_char[3:0]] + 1;
+        end
+        // left side is leaf, right side is subtree
+        else if(out_char[7:4] >= 7 && out_char[3:0] < 7) begin
+            if(out_char[7:4] == 7) codeLength[7] <= codeLength[7] + 1;
+            else if(childMap[out_char[3:0]][7] == 1) codeLength[7] <= codeLength[7] + 1;
+
+            if(out_char[7:4] == 8) codeLength[8] <= codeLength[8] + 1;
+            else if(childMap[out_char[3:0]][8] == 1) codeLength[8] <= codeLength[8] + 1;
+
+            if(out_char[7:4] == 9) codeLength[9] <= codeLength[9] + 1;
+            else if(childMap[out_char[3:0]][9] == 1) codeLength[9] <= codeLength[9] + 1;
+
+            if(out_char[7:4] == 10) codeLength[10] <= codeLength[10] + 1;
+            else if(childMap[out_char[3:0]][10] == 1) codeLength[10] <= codeLength[10] + 1;
+
+            if(out_char[7:4] == 11) codeLength[11] <= codeLength[11] + 1;
+            else if(childMap[out_char[3:0]][11] == 1) codeLength[11] <= codeLength[11] + 1;
+
+            if(out_char[7:4] == 12) codeLength[12] <= codeLength[12] + 1;
+            else if(childMap[out_char[3:0]][12] == 1) codeLength[12] <= codeLength[12] + 1;
+
+            if(out_char[7:4] == 13) codeLength[13] <= codeLength[13] + 1;
+            else if(childMap[out_char[3:0]][13] == 1) codeLength[13] <= codeLength[13] + 1;
+
+            if(out_char[7:4] == 14) codeLength[14] <= codeLength[14] + 1;
+            else if(childMap[out_char[3:0]][14] == 1) codeLength[14] <= codeLength[14] + 1;
+        end
+        // left side is subtree, right side is leaf
+        else if(out_char[7:4] < 7 && out_char[3:0] >= 7) begin
+            if(out_char[3:0] == 7) codeLength[7] <= codeLength[7] + 1;
+            else if(childMap[out_char[7:4]][7] == 1) codeLength[7] <= codeLength[7] + 1;
+
+            if(out_char[3:0] == 8) codeLength[8] <= codeLength[8] + 1;
+            else if(childMap[out_char[7:4]][8] == 1) codeLength[8] <= codeLength[8] + 1;
+
+            if(out_char[3:0] == 9) codeLength[9] <= codeLength[9] + 1;
+            else if(childMap[out_char[7:4]][9] == 1) codeLength[9] <= codeLength[9] + 1;
+
+            if(out_char[3:0] == 10) codeLength[10] <= codeLength[10] + 1;
+            else if(childMap[out_char[7:4]][10] == 1) codeLength[10] <= codeLength[10] + 1;
+
+            if(out_char[3:0] == 11) codeLength[11] <= codeLength[11] + 1;
+            else if(childMap[out_char[7:4]][11] == 1) codeLength[11] <= codeLength[11] + 1;
+
+            if(out_char[3:0] == 12) codeLength[12] <= codeLength[12] + 1;
+            else if(childMap[out_char[7:4]][12] == 1) codeLength[12] <= codeLength[12] + 1;
+
+            if(out_char[3:0] == 13) codeLength[13] <= codeLength[13] + 1;
+            else if(childMap[out_char[7:4]][13] == 1) codeLength[13] <= codeLength[13] + 1;
+
+            if(out_char[3:0] == 14) codeLength[14] <= codeLength[14] + 1;
+            else if(childMap[out_char[7:4]][14] == 1) codeLength[14] <= codeLength[14] + 1;
+        end
+        // both side is subtree
+        else begin
+            if(childMap[out_char[7:4]][7] | childMap[out_char[3:0]][7]) codeLength[7] <= codeLength[7] + 1; 
+            if(childMap[out_char[7:4]][8] | childMap[out_char[3:0]][8]) codeLength[8] <= codeLength[8] + 1; 
+            if(childMap[out_char[7:4]][9] | childMap[out_char[3:0]][9]) codeLength[9] <= codeLength[9] + 1; 
+            if(childMap[out_char[7:4]][10] | childMap[out_char[3:0]][10]) codeLength[10] <= codeLength[10] + 1;
+            if(childMap[out_char[7:4]][11] | childMap[out_char[3:0]][11]) codeLength[11] <= codeLength[11] + 1;
+            if(childMap[out_char[7:4]][12] | childMap[out_char[3:0]][12]) codeLength[12] <= codeLength[12] + 1;
+            if(childMap[out_char[7:4]][13] | childMap[out_char[3:0]][13]) codeLength[13] <= codeLength[13] + 1;
+            if(childMap[out_char[7:4]][14] | childMap[out_char[3:0]][14]) codeLength[14] <= codeLength[14] + 1;
+        end
+    end
+end
+
+// huffmanCode
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        for(i = 7; i <= 14; i = i+1) begin
+            huffmanCode[i] <= 0;
+        end
+    end
+    else if(curState == PLANT_TREE) begin
+        // both side is leaf
+        if(out_char[7:4] >= 7 && out_char[3:0] >= 7) begin
+            huffmanCode[out_char[7:4]] <= {huffmanCode[out_char[7:4]][5:0], 1'b0};
+            huffmanCode[out_char[3:0]] <= {huffmanCode[out_char[3:0]][5:0], 1'b1};
+        end
+        // left side is leaf, right side is subtree
+        else if(out_char[7:4] >= 7 && out_char[3:0] < 7) begin
+            if(out_char[7:4] == 7) huffmanCode[7] <= {huffmanCode[7][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][7] == 1) huffmanCode[7] <= {huffmanCode[7][5:0], 1'b1};
+
+            if(out_char[7:4] == 8) huffmanCode[8] <= {huffmanCode[8][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][8] == 1) huffmanCode[8] <= {huffmanCode[8][5:0], 1'b1};
+
+            if(out_char[7:4] == 9) huffmanCode[9] <= {huffmanCode[9][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][9] == 1) huffmanCode[9] <= {huffmanCode[9][5:0], 1'b1};
+
+            if(out_char[7:4] == 10) huffmanCode[10] <= {huffmanCode[10][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][10] == 1) huffmanCode[10] <= {huffmanCode[10][5:0], 1'b1};
+
+            if(out_char[7:4] == 11) huffmanCode[11] <= {huffmanCode[11][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][11] == 1) huffmanCode[11] <= {huffmanCode[11][5:0], 1'b1};
+
+            if(out_char[7:4] == 12) huffmanCode[12] <= {huffmanCode[12][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][12] == 1) huffmanCode[12] <= {huffmanCode[12][5:0], 1'b1};
+
+            if(out_char[7:4] == 13) huffmanCode[13] <= {huffmanCode[13][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][13] == 1) huffmanCode[13] <= {huffmanCode[13][5:0], 1'b1};
+
+            if(out_char[7:4] == 14) huffmanCode[14] <= {huffmanCode[14][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][14] == 1) huffmanCode[14] <= {huffmanCode[14][5:0], 1'b1};
+        end
+        // left side is subtree, right side is leaf
+        else if(out_char[7:4] < 7 && out_char[3:0] >= 7) begin
+            if(out_char[3:0] == 7) huffmanCode[7] <= {huffmanCode[7][5:0], 1'b1};
+            else if(childMap[out_char[7:4]][7] == 1) huffmanCode[7] <= {huffmanCode[7][5:0], 1'b0};
+
+            if(out_char[3:0] == 8) huffmanCode[8] <= {huffmanCode[8][5:0], 1'b1};
+            else if(childMap[out_char[7:4]][8] == 1) huffmanCode[8] <= {huffmanCode[8][5:0], 1'b0};
+
+            if(out_char[3:0] == 9) huffmanCode[9] <= {huffmanCode[9][5:0], 1'b1};
+            else if(childMap[out_char[7:4]][9] == 1) huffmanCode[9] <= {huffmanCode[9][5:0], 1'b0};
+
+            if(out_char[3:0] == 10) huffmanCode[10] <= {huffmanCode[10][5:0], 1'b1};
+            else if(childMap[out_char[7:4]][10] == 1) huffmanCode[10] <= {huffmanCode[10][5:0], 1'b0};
+
+            if(out_char[3:0] == 11) huffmanCode[11] <= {huffmanCode[11][5:0], 1'b1};
+            else if(childMap[out_char[7:4]][11] == 1) huffmanCode[11] <= {huffmanCode[11][5:0], 1'b0};
+
+            if(out_char[3:0] == 12) huffmanCode[12] <= {huffmanCode[12][5:0], 1'b1};
+            else if(childMap[out_char[7:4]][12] == 1) huffmanCode[12] <= {huffmanCode[12][5:0], 1'b0};
+
+            if(out_char[3:0] == 13) huffmanCode[13] <= {huffmanCode[13][5:0], 1'b1};
+            else if(childMap[out_char[7:4]][13] == 1) huffmanCode[13] <= {huffmanCode[13][5:0], 1'b0};
+
+            if(out_char[3:0] == 14) huffmanCode[14] <= {huffmanCode[14][5:0], 1'b1};
+            else if(childMap[out_char[7:4]][14] == 1) huffmanCode[14] <= {huffmanCode[14][5:0], 1'b0};
+        end
+        // both side is subtree
+        else begin
+            if(childMap[out_char[7:4]][7] == 1) huffmanCode[7] <= {huffmanCode[7][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][7] == 1) huffmanCode[7] <= {huffmanCode[7][5:0], 1'b1};
+
+            if(childMap[out_char[7:4]][8] == 1) huffmanCode[8] <= {huffmanCode[8][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][8] == 1) huffmanCode[8] <= {huffmanCode[8][5:0], 1'b1};
+
+            if(childMap[out_char[7:4]][9] == 1) huffmanCode[9] <= {huffmanCode[9][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][9] == 1) huffmanCode[9] <= {huffmanCode[9][5:0], 1'b1};
+
+            if(childMap[out_char[7:4]][10] == 1) huffmanCode[10] <= {huffmanCode[10][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][10] == 1) huffmanCode[10] <= {huffmanCode[10][5:0], 1'b1};
+
+            if(childMap[out_char[7:4]][11] == 1) huffmanCode[11] <= {huffmanCode[11][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][11] == 1) huffmanCode[11] <= {huffmanCode[11][5:0], 1'b1};
+
+            if(childMap[out_char[7:4]][12] == 1) huffmanCode[12] <= {huffmanCode[12][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][12] == 1) huffmanCode[12] <= {huffmanCode[12][5:0], 1'b1};
+
+            if(childMap[out_char[7:4]][13] == 1) huffmanCode[13] <= {huffmanCode[13][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][13] == 1) huffmanCode[13] <= {huffmanCode[13][5:0], 1'b1};
+
+            if(childMap[out_char[7:4]][14] == 1) huffmanCode[14] <= {huffmanCode[14][5:0], 1'b0};
+            else if(childMap[out_char[3:0]][14] == 1) huffmanCode[14] <= {huffmanCode[14][5:0], 1'b1};
+        end
+    end
+end
+
+
+endmodule
